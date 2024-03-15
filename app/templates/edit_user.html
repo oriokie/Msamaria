@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit User</title>
+  </head>
+  <body>
+    <h1>Edit User</h1>
+    <form method="post">
+      <label for="name">Name:</label><br />
+      <input type="text" id="name" name="name" value="{{ user.name }}" /><br />
+      <label for="id_number">ID Number:</label><br />
+      <input type="text" id="id_number" name="id_number" value="{{ user.id_number }}" /><br />
+      <label for="phone_number">Phone Number:</label><br />
+      <input type="text" id="phone_number" name="phone_number" value="{{ user.phone_number }}" /><br />
+      <label for="is_admin">Admin:</label><br />
+      <input type="checkbox" id="is_admin" name="is_admin" {% if user.is_admin %}checked{% endif %} /><br />
+      <button type="submit">Update</button>
+    </form>
+  </body>
+</html>

@@ -1,0 +1,127 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-5">
+  <h1 class="mb-4">Profile</h1>
+
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a
+        class="nav-link active"
+        id="my-details-tab"
+        data-toggle="tab"
+        href="#my-details"
+        role="tab"
+        aria-controls="my-details"
+        aria-selected="true"
+        >My Details</a
+      >
+    </li>
+    {% if current_user.is_admin %}
+    <li class="nav-item">
+      <a
+        class="nav-link"
+        id="edit-users-tab"
+        data-toggle="tab"
+        href="#edit-users"
+        role="tab"
+        aria-controls="edit-users"
+        aria-selected="false"
+        >Edit Users</a
+      >
+    </li>
+    {% endif %} {% if not current_user.is_admin %}
+    <li class="nav-item">
+      <a
+        class="nav-link"
+        id="dependents-tab"
+        data-toggle="tab"
+        href="#dependents"
+        role="tab"
+        aria-controls="dependents"
+        aria-selected="false"
+        >Dependents</a
+      >
+      {% endif %}
+    </li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content mt-4">
+    <!-- My Details tab -->
+    <div class="tab-pane fade show active" id="my-details" role="tabpanel" aria-labelledby="my-details-tab">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">My Details</h5>
+          <p class="card-text"><strong>Name:</strong> {{ current_user.name }}</p>
+          <p class="card-text"><strong>ID Number:</strong> {{ current_user.id_number }}</p>
+          <p class="card-text"><strong>Phone Number:</strong> {{ current_user.phone_number }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Users tab -->
+    {% if current_user.is_admin %}
+    <div class="tab-pane fade" id="edit-users" role="tabpanel" aria-labelledby="edit-users-tab">
+      <div class="card mt-4">
+        <div class="card-body">
+          <h5 class="card-title">All Members</h5>
+          <ul class="list-group">
+            {% for user in users %}
+            <li class="list-group-item">
+              <strong>Name:</strong> {{ user.name }} <br />
+              <strong>ID Number:</strong> {{ user.id_number }} <br />
+              <strong>Phone Number:</strong> {{ user.phone_number }} <br />
+              <strong>Admin:</strong> {{ "Yes" if user.is_admin else "No" }} <br />
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    {% endif %} {% if not current_user.is_admin %}
+    <!-- Dependents Tab -->
+    <div class="tab-pane fade" id="dependents" role="tabpanel" aria-labelledby="dependents-tab">
+      <h2>Dependents</h2>
+      <form id="addDependentForm">
+        <div class="form-group">
+          <label for="dependentName">Name</label>
+          <input type="text" class="form-control" id="dependentName" name="name" required />
+        </div>
+        <div class="form-group">
+          <label for="dependentPhoneNumber">Phone Number</label>
+          <input type="text" class="form-control" id="dependentPhoneNumber" name="phone_number" />
+        </div>
+        <div class="form-group">
+          <label for="dependentRelationship">Relationship</label>
+          <select class="form-control" id="dependentRelationship" name="relationship">
+            <option value="parent">Parent</option>
+            <option value="parent-in-law">Parent-in-law</option>
+            <option value="daughter">Daughter</option>
+            <option value="son">Son</option>
+            <option value="spouse">Spouse</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Dependent</button>
+      </form>
+
+      <!-- List of Dependents -->
+      <div>
+        <h2>Dependents</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Phone Number</th>
+              <th>Relationship</th>
+              <th>Date Added</th>
+            </tr>
+          </thead>
+          <tbody id="dependentsTableBody">
+            <!-- Dependents will be dynamically added here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %} {% endblock %}

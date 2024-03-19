@@ -37,7 +37,7 @@ class Dependent(db.Model):
             'updated_at': self.updated_at
         }
 
-    def isdeceased(self):
+    def mark_deceased(self):
         self.is_deceased = True
         db.session.commit()
 

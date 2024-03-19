@@ -54,6 +54,9 @@ def register():
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     print("Debug: Login route accessed")
+    if current_user.is_authenticated:
+        return redirect(url_for('routes.profile'))  # Redirect to profile if user is already logged in
+    
     if request.method == 'POST':
         id_number = request.form['id_number']
         password = request.form['password']

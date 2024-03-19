@@ -20,6 +20,7 @@ class Member(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=True)
     dependents = db.relationship('Dependent', backref='member', lazy=True)
+    cases = db.relationship('Case', backref='member', lazy=True)
     
     def __init__(self, name, id_number, phone_number, password):
         self.name = name

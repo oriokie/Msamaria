@@ -31,12 +31,14 @@ def create_app(config=None):
     from app.dependents.views import dependents_bp
     from app.admin_routes import admin_bp
     from app.cases.views import cases_bp
+    from app.cases.active import active_cases_bp
 
     app.register_blueprint(members_bp)
     app.register_blueprint(routes_bp)
     app.register_blueprint(dependents_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(cases_bp)
+    app.register_blueprint(active_cases_bp)
 
     # Import and register models to create database tables
     from app.members import models

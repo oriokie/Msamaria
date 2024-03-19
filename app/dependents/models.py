@@ -8,7 +8,7 @@ class Dependent(db.Model):
     __tablename__ = 'dependents'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
-    phone_number = db.Column(db.String(15))
+    phone_number = db.Column(db.String(15), nullable=True)
     member_id = db.Column(db.Integer, db.ForeignKey('members.id'), nullable=False)
     is_deceased = db.Column(db.Boolean, default=False)
     relationship = db.Column(db.String(255), nullable=False)

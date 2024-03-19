@@ -7,7 +7,7 @@ from datetime import datetime
 from flask_login import login_required
 from flask import current_app as app
 from flask import jsonify
-from app.cases.utils import fetch_member_id
+from app.cases.utils import fetch_member_id, get_member_name, get_dependent_name
 
 cases_bp = Blueprint('cases', __name__, url_prefix='/cases')
 
@@ -29,10 +29,9 @@ def create_case():
     try:
         member_id = request.form.get('member_id')
         dependent_id = request.form.get('dependent_id')
-        member_deceased = request.form.get('member_deceased') == 'on'
         case_amount = float(request.form.get('case_amount')) if request.form.get('case_amount') else 0.0
 
-        print(f"Debug: Member ID: {member_id}, Dependent ID: {dependent_id}, Member Deceased: {member_deceased}, Case Amount: {case_amount}")
+        print(f"Debug: Member ID: {member_id}, Dependent ID: {dependent_id}, Case Amount: {case_amount}")
 
        # If dependent_id is None or not provided, create the case without specifying a dependent
         if dependent_id == 'None' or dependent_id == 'null' or not dependent_id:
@@ -51,7 +50,7 @@ def create_case():
                 dependent.mark_deceased()
 
         # Create the case
-        case = Case(member_id=member_id, dependent_id=dependent_id, member_deceased=member_deceased, case_amount=case_amount)
+        case = Case(member_id=member_id, dependent_id=dependent_id, case_amount=case_amount)
         db.session.add(case)
         db.session.commit()
         flash('Case created successfully.', 'success')

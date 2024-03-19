@@ -3,7 +3,6 @@ $(document).ready(function () {
   $("#createCaseBtn").click(function () {
     var member_id = $("#memberSelect").val();
     var dependent_id = $("#dependentSelect").val();
-    var member_deceased = $("#memberDeceasedCheckbox").prop("checked");
     var case_amount = $("#caseAmountInput").val();
 
     // If dependent_id is not null, fetch the respective member_id from the backend
@@ -18,10 +17,9 @@ $(document).ready(function () {
           member_id = response.member_id;
           console.log("Member ID:", member_id);
           console.log("Dependent ID:", dependent_id);
-          console.log("Member Deceased:", member_deceased);
           console.log("Case Amount:", case_amount);
           // Make the AJAX call to create the case
-          createCase(member_id, dependent_id, member_deceased, case_amount);
+          createCase(member_id, dependent_id, case_amount);
         },
         error: function (xhr, status, error) {
           console.error("Failed to retrieve member ID:", error);
@@ -31,22 +29,20 @@ $(document).ready(function () {
     } else {
       console.log("Member ID:", member_id);
       console.log("Dependent ID:", dependent_id);
-      console.log("Member Deceased:", member_deceased);
       console.log("Case Amount:", case_amount);
       // Make the AJAX call to create the case
-      createCase(member_id, dependent_id, member_deceased, case_amount);
+      createCase(member_id, dependent_id, case_amount);
     }
   });
 
   // Function to create the case
-  function createCase(member_id, dependent_id, member_deceased, case_amount) {
+  function createCase(member_id, dependent_id, case_amount) {
     $.ajax({
       type: "POST",
       url: "/cases/create",
       data: {
         member_id: member_id,
         dependent_id: dependent_id,
-        member_deceased: member_deceased,
         case_amount: case_amount,
       },
       success: function (response) {

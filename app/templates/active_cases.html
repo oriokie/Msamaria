@@ -1,0 +1,35 @@
+<!-- active_cases.html -->
+
+{% extends 'base.html' %} {% block content %}
+<h2>Active Cases</h2>
+<table class="table table-striped table-bordered">
+  <thead>
+    <tr>
+      <th>Case ID</th>
+      <th>Deceased Person</th>
+      <th>Date Created</th>
+      <th>Case Amount</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for case, case_id, deceased_member in active_cases %}
+    <tr>
+      <td>{{ case_id }}</td>
+      <td>{{ deceased_member }}</td>
+      <td>{{ case.created_at }}</td>
+      <td>{{ case.case_amount }}</td>
+      <td>
+        {% if not case.closed %}
+        <form method="post" action="{{ url_for('active_cases.close_case', case_id=case.id) }}">
+          <button type="submit" class="btn btn-danger">Close Case</button>
+        </form>
+        {% else %}
+        <span class="text-success">Closed</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

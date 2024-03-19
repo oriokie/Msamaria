@@ -9,20 +9,20 @@ class Case(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     member_id = db.Column(db.Integer, db.ForeignKey('members.id'), nullable=False)
     dependent_id = db.Column(db.Integer, nullable=True)
-    member_deceased = db.Column(db.Boolean, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False)
     case_amount = db.Column(db.Float, nullable=True)
+    closed = db.Column(db.Boolean, default=False)
+    closed_at = db.Column(db.DateTime, nullable=True)
 
-    def __init__(self, member_id, dependent_id=None, member_deceased=True, case_amount=0.0):
+    def __init__(self, member_id, dependent_id=None, case_amount=0.0):
         self.member_id = member_id
         self.dependent_id = dependent_id
-        self.member_deceased = member_deceased
         self.created_at = datetime.utcnow()
         self.case_amount = case_amount
 
     @classmethod
-    def create_case(cls, member_id, dependent_id=None, member_deceased=True, case_amount=0.0):
-        case = cls(member_id=member_id, dependent_id=dependent_id, member_deceased=member_deceased, case_amount=case_amount)
+    def create_case(cls, member_id, dependent_id=None, case_amount=0.0):
+        case = cls(member_id=member_id, dependent_id=dependent_id, case_amount=case_amount)
         db.session.add(case)
         db.session.commit()
         return case
@@ -65,3 +65,10 @@ class Case(db.Model):
             'created_at': self.created_at,
             'case_amount': self.case_amount
         }
+    
+    def close_case(self):
+        self.closed = True
+        self.closed_at = datetime.utcnow()
+        db.session.commit()
+        return self
+

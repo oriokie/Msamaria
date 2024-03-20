@@ -4,4 +4,6 @@ venv/
 # Ignore Python cache files
 *.pyc
 __pycache__/
-
+*.csv
+*.xlsx
+*.xls

@@ -7,7 +7,7 @@ from datetime import datetime
 from flask_login import login_required
 from flask import current_app as app
 from flask import jsonify
-from app.cases.utils import fetch_member_id, get_member_name, get_dependent_name
+from app.cases.utils import fetch_member_id
 
 cases_bp = Blueprint('cases', __name__, url_prefix='/cases')
 

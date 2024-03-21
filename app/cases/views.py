@@ -8,6 +8,7 @@ from flask_login import login_required
 from flask import current_app as app
 from flask import jsonify
 from app.cases.utils import fetch_member_id
+from app.contributions.models import Contribution
 
 cases_bp = Blueprint('cases', __name__, url_prefix='/cases')
 
@@ -55,6 +56,9 @@ def create_case():
         db.session.commit()
         flash('Case created successfully.', 'success')
 
+        # Generate contribution records for all active members
+        generate_contributions_for_case(case)
+
         return redirect(url_for('cases.search'))
     
     except Exception as e:
@@ -64,6 +68,7 @@ def create_case():
         return redirect(url_for('cases.search'))
 
 @cases_bp.route('/get-member-id', methods=['POST'])
+@login_required
 def get_member_id():
     dependent_id = request.form.get('dependent_id')
     # Logic to fetch the member ID based on the dependent ID
@@ -71,3 +76,15 @@ def get_member_id():
     member_id = fetch_member_id(dependent_id)  # Replace this with your logic
     print(f"Member ID: {member_id}")
     return jsonify({'member_id': member_id})
+
+# Function to generate contribution records for all active members when a new case is created
+def generate_contributions_for_case(case):
+    active_members = Member.query.filter_by(active=True).all()
+    for member in active_members:
+        contribution = Contribution(
+            member_id=member.id,
+            case_id=case.id,
+            paid=False  # Set paid column as False initially
+        )
+        db.session.add(contribution)
+    db.session.commit()

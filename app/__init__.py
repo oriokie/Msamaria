@@ -4,6 +4,7 @@ from .db import db
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from app.members.models import Member
+from app.contributions.models import Contribution
 import logging
 
 # Create an instance of LoginManager
@@ -33,6 +34,7 @@ def create_app(config=None):
     from app.cases.views import cases_bp
     from app.cases.active import active_cases_bp
     from app.utility.multiple import csv_bp
+    from app.contributions.views import contributions_bp
 
     app.register_blueprint(members_bp)
     app.register_blueprint(routes_bp)
@@ -41,6 +43,7 @@ def create_app(config=None):
     app.register_blueprint(cases_bp)
     app.register_blueprint(active_cases_bp)
     app.register_blueprint(csv_bp)
+    app.register_blueprint(contributions_bp)
 
     # Import and register models to create database tables
     from app.members import models

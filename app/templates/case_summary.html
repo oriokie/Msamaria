@@ -1,0 +1,27 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  <h1>Case Summary</h1>
+  <table class="table table-striped table-bordered">
+    <thead>
+      <tr>
+        <th>Case Number</th>
+        <th>Total Amount Contributed</th>
+        <th>Number of Contributing Members</th>
+        <th>Number of Non-Contributing Members</th>
+        <th>Deceased Person</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for case in case_summaries %}
+      <tr>
+        <td><a href="{{ url_for('contributions.case_details', case_id=case.id) }}">{{ case.id }}</a></td>
+        <td>{{ case.total_amount_contributed }}</td>
+        <td>{{ case.active_members_contributed }}</td>
+        <td>{{ case.active_members_not_contributed }}</td>
+        <td>{{ case.deceased_person }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

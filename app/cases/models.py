@@ -2,6 +2,8 @@
 
 from app import db
 from datetime import datetime
+from sqlalchemy.orm import relationship  # Import relationship from SQLAlchemy
+
 
 class Case(db.Model):
     __tablename__ = 'cases'
@@ -12,7 +14,10 @@ class Case(db.Model):
     created_at = db.Column(db.DateTime, nullable=False)
     case_amount = db.Column(db.Float, nullable=True)
     closed = db.Column(db.Boolean, default=False)
+    status = db.Column(db.String(20), default='open')
     closed_at = db.Column(db.DateTime, nullable=True)
+    contributions = db.relationship('Contribution', back_populates='case', lazy=True)
+
 
     def __init__(self, member_id, dependent_id=None, case_amount=0.0):
         self.member_id = member_id

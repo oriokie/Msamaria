@@ -41,6 +41,8 @@
   <!-- Link to view active cases -->
   <div class="mt-4">
     <a href="{{ url_for('active_cases.view_active_cases') }}" class="btn btn-info">View Active Cases</a>
+    <a href="{{ url_for('contributions.search_members') }}" class="btn btn-info">Contributions</a>
+    <a href="{{ url_for('contributions.case_summary') }}" class="btn btn-info">Case Summary</a>
   </div>
 </div>
 {% endblock %}

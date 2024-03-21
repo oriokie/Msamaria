@@ -4,6 +4,9 @@ from app.db import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from datetime import datetime
+from sqlalchemy.orm import relationship  # Import relationship from SQLAlchemy
+
+
 
 class Member(UserMixin, db.Model):
     """This class represents the members table."""
@@ -21,6 +24,8 @@ class Member(UserMixin, db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=True)
     dependents = db.relationship('Dependent', backref='member', lazy=True)
     cases = db.relationship('Case', backref='member', lazy=True)
+    contributions = db.relationship('Contribution', back_populates='member', lazy=True)
+    
     
     def __init__(self, name, id_number, phone_number, password):
         self.name = name
@@ -129,3 +134,9 @@ class Member(UserMixin, db.Model):
     def save(self):
         db.session.add(self)
         db.session.commit()
+    
+    @property
+    def paid_cases(self):
+        return [contribution.case_id for contribution in self.contributions if contribution.paid]
+    
+    

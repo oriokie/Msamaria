@@ -1,0 +1,35 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  <h2>Contributions</h2>
+  {% if enumerated_member_names %}
+  <p>Contributing Members: for case: {{ case_id }}</p>
+  <ul>
+    {% for index, member_name in enumerated_member_names %}
+    <li><code>{{ index }}. {{ member_name }}</code></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>No contributing members found for this case.</p>
+  {% endif %}
+
+  <h2>Case Summary</h2>
+  <table class="table table-striped table-bordered">
+    <thead>
+      <tr>
+        <th>Case ID</th>
+        <th>Case Amount</th>
+        <th>Deceased Person</th>
+        <th>Total Contributed Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ case.id }}</td>
+        <td>${{ case.case_amount }}</td>
+        <td>{{ deceased_person }}</td>
+        <td>${{ total_amount_contributed }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}

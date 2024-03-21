@@ -3,12 +3,14 @@ from flask import Blueprint, render_template, redirect, url_for
 from app import db
 from .models import Case
 from app.cases.utils import fetch_member_id, get_member_name, get_dependent_name
+from flask_login import login_required
 
 # Define a Blueprint for the active cases route
 active_cases_bp = Blueprint('active_cases', __name__, url_prefix='/active-cases')
 
 # Route for viewing active cases
 @active_cases_bp.route('/')
+@login_required
 def view_active_cases():
     # Query active cases from the database
     active_cases = Case.query.filter_by(closed=False).all()
@@ -27,6 +29,7 @@ def view_active_cases():
 
 # Route for closing an open case
 @active_cases_bp.route('/close/<int:case_id>', methods=['POST'])
+@login_required
 def close_case(case_id):
     # Query the case by its ID
     case = Case.query.get_or_404(case_id)

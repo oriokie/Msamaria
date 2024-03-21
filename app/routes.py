@@ -83,7 +83,11 @@ def profile():
     print("Debug: Profile route accessed")
     # Fetch the current user's details
     user = current_user
-    is_admin = user.is_admin  # Check if the user is an admin
+    is_admin = user.is_admin
+    # is_active = user.active or user.active is not None
+
+    print(f"Debug: User details - Name: {user.name}, ID Number: {user.id_number}, Phone Number: {user.phone_number}, Admin: {is_admin}")
+     # Check if the user is an admin
 
     if is_admin:
         # Fetch all users if the current user is an admin

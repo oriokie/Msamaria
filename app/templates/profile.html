@@ -70,6 +70,9 @@
           <p class="card-text"><strong>Phone Number:</strong> {{ current_user.phone_number }}</p>
         </div>
       </div>
+      <div class="alert {% if current_user.active %}alert-success{% else %}alert-danger{% endif %}" role="alert">
+        {% if current_user.active %} Active {% else %} In-active !{% endif %}
+      </div>
     </div>
 
     <!-- Edit Users tab -->

@@ -3,11 +3,11 @@
   <h2>Contributions</h2>
   {% if enumerated_member_names %}
   <p>Contributing Members: for case: {{ case_id }}</p>
-  <ul>
+  <ol style="list-style-type: none">
     {% for index, member_name in enumerated_member_names %}
     <li><code>{{ index }}. {{ member_name }}</code></li>
     {% endfor %}
-  </ul>
+  </ol>
   {% else %}
   <p>No contributing members found for this case.</p>
   {% endif %}

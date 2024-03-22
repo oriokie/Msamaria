@@ -5,6 +5,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from datetime import datetime
 from sqlalchemy.orm import relationship  # Import relationship from SQLAlchemy
+from app.dependents.models import Dependent
+from app.cases.models import Case
+from app.contributions.models import Contribution
+from sqlalchemy import desc
 
 
 
@@ -139,4 +143,25 @@ class Member(UserMixin, db.Model):
     def paid_cases(self):
         return [contribution.case_id for contribution in self.contributions if contribution.paid]
     
+    def get_contributions(self):
+        return [contribution.serialize() for contribution in self.contributions]
     
+    def get_dependents(self):
+        return [dependent.serialize() for dependent in self.dependents]
+    
+    def get_cases(self):
+        return [case.serialize() for case in self.cases]
+    
+    def get_not_paid(self):
+        return [contribution.serialize() for contribution in self.contributions if not contribution.paid]
+    
+    @property
+    def has_not_contributed_last_3_cases(self):
+        last_3_cases = Case.query.order_by(desc(Case.id)).limit(3).all()
+        counter = 0
+
+        for case in last_3_cases:
+            contribution = Contribution.query.filter_by(member_id=self.id, case_id=case.id).first()
+            if not contribution or not contribution.paid:
+                counter += 1
+        return (counter)

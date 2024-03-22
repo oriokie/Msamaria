@@ -29,7 +29,18 @@
         >Edit Users</a
       >
     </li>
-    <!-- New tab for uploading CSV -->
+    <li class="nav-item">
+      <a
+        class="nav-link"
+        id="defaulters-tab"
+        data-toggle="tab"
+        href="#defaulters"
+        role="tab"
+        aria-controls="defaulters"
+        aria-selected="false"
+        >Defaulters</a
+      >
+    </li>
     <li class="nav-item">
       <a
         class="nav-link"
@@ -71,7 +82,7 @@
         </div>
       </div>
       <div class="alert {% if current_user.active %}alert-success{% else %}alert-danger{% endif %}" role="alert">
-        {% if current_user.active %} Active {% else %} In-active !{% endif %}
+        {% if current_user.active %}Active{% else %}Inactive{% endif %}
       </div>
     </div>
 
@@ -87,15 +98,17 @@
               <strong>Name:</strong> {{ user.name }} <br />
               <strong>ID Number:</strong> {{ user.id_number }} <br />
               <strong>Phone Number:</strong> {{ user.phone_number }} <br />
-              <strong>Admin:</strong> {{ "Yes" if user.is_admin else "No" }} <br />
+              <strong>Admin:</strong> {% if user.is_admin %}Yes{% else %}No{% endif %} <br />
             </li>
             {% endfor %}
           </ul>
         </div>
       </div>
     </div>
-    {% endif %} {% if not current_user.is_admin %}
+    {% endif %}
+
     <!-- Dependents Tab -->
+    {% if not current_user.is_admin %}
     <div class="tab-pane fade" id="dependents" role="tabpanel" aria-labelledby="dependents-tab">
       <h2>Dependents</h2>
       <form id="addDependentForm">
@@ -138,13 +151,13 @@
         </table>
       </div>
     </div>
-    {% endif %} {% if current_user.is_admin %}
-    <!-- New tab for uploading CSV -->
+    {% endif %}
+
+    <!-- Upload CSV tab -->
+    {% if current_user.is_admin %}
     <div class="tab-pane fade" id="upload-csv" role="tabpanel" aria-labelledby="upload-csv-tab">
-      <!-- Content for uploading CSV -->
       <div class="container mt-4">
         <h2>Upload CSV</h2>
-        <!-- Add your CSV upload form here -->
         <form action="{{ url_for('csv.upload_csv') }}" method="post" enctype="multipart/form-data">
           <div class="form-group">
             <label for="csvFile">Select CSV File</label>
@@ -154,7 +167,32 @@
         </form>
       </div>
     </div>
+
+    <!-- Defaulters tab -->
+    <div class="tab-pane fade" id="defaulters" role="tabpanel" aria-labelledby="defaulters-tab">
+      <h2>Defaulters</h2>
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>ID Number</th>
+            <th>Phone Number</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for defaulter in defaulters %}
+          <tr>
+            <td>{{ defaulter.name }}</td>
+            <td>{{ defaulter.id_number }}</td>
+            <td>{{ defaulter.phone_number }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
     {% endif %}
   </div>
+</div>
+</div>
 </div>
 {% endblock %}

@@ -5,6 +5,9 @@ from app.members.models import Member
 from .db import db
 from app import login_manager
 from flask import session
+from app.cases.models import Case
+from sqlalchemy import desc
+from app.contributions.models import Contribution
 
 
 # Create a Blueprint instance
@@ -91,11 +94,21 @@ def profile():
 
     if is_admin:
         # Fetch all users if the current user is an admin
-        users = Member.query.all()
+        users = Member.query.filter_by(active=True).all()
     else:
-        users = None  # Set users to None for non-admin users
+        users = []  # Set users to None for non-admin users
+        
+    last_3_cases = Case.query.order_by(desc(Case.id)).limit(3).all()
+    print(f"Debug: Last 3 cases - {last_3_cases}")
 
-    return render_template('profile.html', user=user, is_admin=is_admin, users=users)
+    if user.is_authenticated and is_admin:
+        defaulters = [member for member in users if member.has_not_contributed_last_3_cases == 3]
+    else:
+        defaulters = []
+    
+    #print(f"Debug: Defaulters - {defaulters}")
+
+    return render_template('profile.html', user=user, is_admin=is_admin, users=users, defaulters=defaulters)
 
 @bp.route('/logout')
 @login_required
@@ -146,3 +159,7 @@ def logout():
 
 #     # Render the edit user template with user data
 #     return render_template('edit_user.html', user=user)
+
+
+
+

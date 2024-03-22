@@ -68,11 +68,11 @@ class Member(UserMixin, db.Model):
 
 
     def activate(self):
-        self.is_active = True
+        self.active = True
         db.session.commit()
     
     def deactivate(self):
-        self.is_active = False
+        self.active = False
         db.session.commit()
     
     def make_admin(self):

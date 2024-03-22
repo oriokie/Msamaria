@@ -18,8 +18,12 @@ cases_bp = Blueprint('cases', __name__, url_prefix='/cases')
 def search():
     if request.method == 'POST':
         search_query = request.form.get('search_query')
-        members = Member.query.filter(Member.name.ilike(f'%{search_query}%')).limit(3).all()
-        dependents = Dependent.query.filter(Dependent.name.ilike(f'%{search_query}%')).limit(3).all()
+        members = Member.query.filter(Member.active == True, Member.name.ilike(f'%{search_query}%')).limit(3).all()
+        dependents = Dependent.query.join(Member).filter(
+            Dependent.name.ilike(f'%{search_query}%'), 
+            Member.active.is_(True)
+        ).limit(3).all()
+
         return render_template('cases.html', members=members, dependents=dependents)
     return render_template('cases.html')
 
@@ -40,9 +44,16 @@ def create_case():
 
         # If the member_deceased option is checked, mark the member as deceased
         if member_id and dependent_id is None:
-            member = Member.query.get(member_id)
+            member = Member.query.get(member_id, active=True).first()
             if member:
                 member.mark_deceased()
+
+        # Check if the dependent's associated member is active
+        if dependent_id:
+            dependent = Dependent.query.get(dependent_id)
+            if dependent and dependent.member.active == False:
+                flash('Cannot create case for inactive member.', 'error')
+                return redirect(url_for('cases.search'))
 
         if dependent_id:
             dependent = Dependent.query.get(dependent_id)

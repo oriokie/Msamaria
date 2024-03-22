@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.security import generate_password_hash
 from app.members.models import Member
@@ -105,10 +105,10 @@ def profile():
         defaulters = [member for member in users if member.has_not_contributed_last_3_cases == 3]
     else:
         defaulters = []
-    
-    #print(f"Debug: Defaulters - {defaulters}")
 
-    return render_template('profile.html', user=user, is_admin=is_admin, users=users, defaulters=defaulters)
+    Defaulted_cases = user.has_not_contributed_last_3_cases
+
+    return render_template('profile.html', user=user, is_admin=is_admin, users=users, defaulters=defaulters, Defaulted_cases=Defaulted_cases, last_3_cases=last_3_cases)
 
 @bp.route('/logout')
 @login_required
@@ -160,6 +160,22 @@ def logout():
 #     # Render the edit user template with user data
 #     return render_template('edit_user.html', user=user)
 
+# # Route for deactivating a user account
+@bp.route('/deactivate-user/<int:user_id>', methods=['POST'])
+@login_required
+def deactivate_user(user_id):
+    if request.method == 'POST':
+        # Fetch the user to be deactivated from the database
+        user = Member.query.get(user_id)
 
+        # Deactivate the user
+        user.deactivate()
 
+        # Commit changes to the database
+        db.session.commit()
+    else:
+        abort(405)
+
+    flash('User account deactivated successfully.', 'success')
+    return redirect(url_for('routes.profile'))
 

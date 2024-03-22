@@ -79,6 +79,7 @@
           <p class="card-text"><strong>Name:</strong> {{ current_user.name }}</p>
           <p class="card-text"><strong>ID Number:</strong> {{ current_user.id_number }}</p>
           <p class="card-text"><strong>Phone Number:</strong> {{ current_user.phone_number }}</p>
+          <p cass="card-text"><strong>Recent 3 Cases Defaulted:</strong>{{ Defaulted_cases }}</p>
         </div>
       </div>
       <div class="alert {% if current_user.active %}alert-success{% else %}alert-danger{% endif %}" role="alert">
@@ -185,6 +186,11 @@
             <td>{{ defaulter.name }}</td>
             <td>{{ defaulter.id_number }}</td>
             <td>{{ defaulter.phone_number }}</td>
+            <td>
+              <form action="{{ url_for('routes.deactivate_user', user_id=defaulter.id) }}" method="post">
+                <button type="submit" class="btn btn-danger">Deregister</button>
+              </form>
+            </td>
           </tr>
           {% endfor %}
         </tbody>
@@ -193,6 +199,5 @@
     {% endif %}
   </div>
 </div>
-</div>
-</div>
+
 {% endblock %}

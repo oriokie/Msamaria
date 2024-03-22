@@ -165,3 +165,25 @@ class Member(UserMixin, db.Model):
             if not contribution or not contribution.paid:
                 counter += 1
         return (counter)
+    
+    @property
+    def total_contributions_paid(self):
+        total_amount = 0.0
+        all_contributions = Contribution.query.filter_by(member_id=self.id).all()
+        for contribution in all_contributions:
+            if contribution.paid:
+                total_amount += contribution.case.case_amount
+        return total_amount
+    
+    @property
+    def total_cases_not_contributed(self):
+        total_cases = Case.query.all()
+        counter = 0
+
+        for case in total_cases:
+            contribution = Contribution.query.filter_by(member_id=self.id, case_id=case.id).first()
+            if not contribution or not contribution.paid:
+                counter += 1
+        return (counter)
+
+    

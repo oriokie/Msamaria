@@ -1,0 +1,12 @@
+<!-- edit_case.html -->
+
+{% extends 'base.html' %} {% block content %}
+<h2>Edit Case</h2>
+<form method="post">
+  <div class="form-group">
+    <label for="case_amount">Case Amount:</label>
+    <input type="number" class="form-control" id="case_amount" name="case_amount" value="{{ case.case_amount }}" required />
+  </div>
+  <button type="submit" class="btn btn-primary">Update Case</button>
+</form>
+{% endblock %}

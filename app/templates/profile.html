@@ -79,7 +79,9 @@
           <p class="card-text"><strong>Name:</strong> {{ current_user.name }}</p>
           <p class="card-text"><strong>ID Number:</strong> {{ current_user.id_number }}</p>
           <p class="card-text"><strong>Phone Number:</strong> {{ current_user.phone_number }}</p>
-          <p cass="card-text"><strong>Recent 3 Cases Defaulted:</strong>{{ Defaulted_cases }}</p>
+          <p cass="card-text"><strong>Recent 3 Cases Defaulted: </strong> {{ Defaulted_cases }}</p>
+          <p cass="card-text"><strong>All Cases Defaulted :</strong> {{ no_of_defaulted_cases }}</p>
+          <p cass="card-text"><strong>Total Contribution Amount:</strong> {{ total_case_contributions }}</p>
         </div>
       </div>
       <div class="alert {% if current_user.active %}alert-success{% else %}alert-danger{% endif %}" role="alert">

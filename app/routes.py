@@ -107,8 +107,16 @@ def profile():
         defaulters = []
 
     Defaulted_cases = user.has_not_contributed_last_3_cases
+    total_case_contributions = user.total_contributions_paid
+    no_of_defaulted_cases = user.total_cases_not_contributed
 
-    return render_template('profile.html', user=user, is_admin=is_admin, users=users, defaulters=defaulters, Defaulted_cases=Defaulted_cases, last_3_cases=last_3_cases)
+    return render_template('profile.html',
+                           user=user, is_admin=is_admin, users=users,
+                           defaulters=defaulters,
+                           Defaulted_cases=Defaulted_cases,
+                           last_3_cases=last_3_cases,
+                           total_case_contributions=total_case_contributions,
+                           no_of_defaulted_cases=no_of_defaulted_cases)
 
 @bp.route('/logout')
 @login_required

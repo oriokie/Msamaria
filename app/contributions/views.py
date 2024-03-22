@@ -17,7 +17,7 @@ def search_members():
     search_query = request.args.get('search_query')
     if search_query:
         print("Search query:", search_query)  # Debug statement
-        members = Member.query.filter(Member.name.ilike(f'%{search_query}%')).all()
+        members = Member.query.filter(Member.active == True, Member.name.ilike(f'%{search_query}%')).all()
         # Load contributions for each member
         for member in members:
             member.contributions  # Ensure contributions are loaded

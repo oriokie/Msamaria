@@ -1,0 +1,70 @@
+<!-- templates/cases.html -->
+{% extends "base.html" %} {% block content %}
+  <body>
+    <div class="container">
+      <h1 class="mt-5 mb-4">Expenses</h1>
+      <div class="row">
+        <div class="col-md-8">
+          <h2>Last 5 Expenses</h2>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Case ID</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Created At</th>
+                <th>Updated At</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for expense in expenses %}
+              <tr>
+                <td>{{ expense.id }}</td>
+                <td>{{ expense.case_id }}</td>
+                <td>{{ expense.description }}</td>
+                <td>{{ expense.amount }}</td>
+                <td>{{ expense.created_at }}</td>
+                <td>{{ expense.updated_at }}</td>
+                <td>
+                  <form action="{{ url_for('expenses.delete_expense', expense_id=expense.id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="col-md-4">
+          <h2>Add Expense</h2>
+          <form action="{{ url_for('expenses.add_expense') }}" method="POST">
+            <div class="mb-3">
+              <label for="case_id" class="form-label">Case ID:</label>
+              <select id="case_id" name="case_id" class="form-select" required>
+                {% for case in active_cases %}
+                <option value="{{ case.id }}">{{ case.id }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="description" class="form-label">Description:</label>
+              <input type="text" id="description" name="description" class="form-control" required />
+            </div>
+            <div class="mb-3">
+              <label for="amount" class="form-label">Amount:</label>
+              <input type="number" id="amount" name="amount" step="0.01" class="form-control" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Add Expense</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    {% endblock %}
+  </body>
+</html>

@@ -186,4 +186,7 @@ class Member(UserMixin, db.Model):
                 counter += 1
         return (counter)
 
-    
+
+    def pay_reg_fee(self):
+        self.reg_fee_paid = True
+        db.session.commit()

@@ -17,6 +17,9 @@ class Case(db.Model):
     status = db.Column(db.String(20), default='open')
     closed_at = db.Column(db.DateTime, nullable=True)
     contributions = db.relationship('Contribution', back_populates='case', lazy=True)
+    # Define a one-to-many relationship with Expense model
+    expenses = relationship("Expense", backref="case", lazy="dynamic")
+
 
 
     def __init__(self, member_id, dependent_id=None, case_amount=0.0):

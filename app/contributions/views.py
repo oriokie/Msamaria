@@ -7,6 +7,7 @@ from sqlalchemy import and_
 from flask import Blueprint
 from sqlalchemy.sql import func
 from app.cases.utils import fetch_member_id, get_member_name, get_dependent_name
+from app.finance.models import Expense
 
 # Define a Blueprint for the contributions route
 contributions_bp = Blueprint('contributions', __name__, url_prefix='/contributions')
@@ -107,10 +108,16 @@ def case_summary():
             deceased_member = get_dependent_name(case.dependent_id)
         else:
             deceased_member = get_member_name(case.member_id)
+
+        # Calculate total expenses for the case
+        total_expenses = sum(expense.amount for expense in case.expenses)
+
         # Calculate summary information for each case
         active_members_contributed = len(set(contribution.member_id for contribution in case.contributions if contribution.paid))
         active_members_not_contributed = len(set(contribution.member_id for contribution in case.contributions if not contribution.paid))
         total_amount_contributed = active_members_contributed * case.case_amount
+        total_expenses = total_expenses
+        total_amount = total_amount_contributed - total_expenses
         deceased_person = deceased_member
 
         # Create a dictionary to store case summary information
@@ -120,6 +127,8 @@ def case_summary():
             'total_amount_contributed': total_amount_contributed,
             'active_members_contributed': active_members_contributed,
             'active_members_not_contributed': active_members_not_contributed,
+            'total_expenses': total_expenses,
+            'total_amount': total_amount,
         }
 
         # Append the case summary to the list

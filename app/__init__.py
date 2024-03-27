@@ -35,6 +35,8 @@ def create_app(config=None):
     from app.cases.active import active_cases_bp
     from app.utility.multiple import csv_bp
     from app.contributions.views import contributions_bp
+    from app.finance.views import expense_bp
+    from app.registration.views import reg_bp
 
     app.register_blueprint(members_bp)
     app.register_blueprint(routes_bp)
@@ -44,6 +46,8 @@ def create_app(config=None):
     app.register_blueprint(active_cases_bp)
     app.register_blueprint(csv_bp)
     app.register_blueprint(contributions_bp)
+    app.register_blueprint(expense_bp)
+    app.register_blueprint(reg_bp)
 
     # Import and register models to create database tables
     from app.members import models

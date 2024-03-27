@@ -8,6 +8,8 @@ from flask import session
 from app.cases.models import Case
 from sqlalchemy import desc
 from app.contributions.models import Contribution
+from app.registration.models import RegistrationFee
+from datetime import datetime
 
 
 # Create a Blueprint instance
@@ -95,8 +97,10 @@ def profile():
     if is_admin:
         # Fetch all users if the current user is an admin
         users = Member.query.filter_by(active=True).all()
+        unpaid_members = Member.query.filter_by(reg_fee_paid=False).all()
     else:
         users = []  # Set users to None for non-admin users
+        unpaid_members = [] # Set unpaid_members to None for non-admin users
         
     last_3_cases = Case.query.order_by(desc(Case.id)).limit(3).all()
     print(f"Debug: Last 3 cases - {last_3_cases}")
@@ -116,6 +120,7 @@ def profile():
                            Defaulted_cases=Defaulted_cases,
                            last_3_cases=last_3_cases,
                            total_case_contributions=total_case_contributions,
+                           unpaid_members = unpaid_members,
                            no_of_defaulted_cases=no_of_defaulted_cases)
 
 @bp.route('/logout')
@@ -187,3 +192,38 @@ def deactivate_user(user_id):
     flash('User account deactivated successfully.', 'success')
     return redirect(url_for('routes.profile'))
 
+# # Route for activating a user account
+@bp.route('/activate-user/<int:user_id>', methods=['POST'])
+@login_required
+def activate_user(user_id):
+    if request.method == 'POST':
+        # Fetch the user to be activated from the database
+        user = Member.query.get(user_id)
+
+        # Activate the user
+        user.activate()
+
+        # Commit changes to the database
+        db.session.commit()
+    else:
+        abort(405)
+
+    flash('User account activated successfully.', 'success')
+    return redirect(url_for('routes.profile'))
+
+
+@bp.route('/register_fee/<int:member_id>', methods=['POST'])
+def register_fee(member_id):
+    # Retrieve the member by ID
+    member = Member.query.get(member_id)
+    if member:
+        # Update reg_fee_paid to True
+        member.reg_fee_paid = True
+        # Create a new RegistrationFee record
+        reg_fee = RegistrationFee(member_id=member.id, amount=500, date_paid=datetime.now())
+        db.session.add(reg_fee)
+        db.session.commit()
+        flash('Registration fee successfully paid.', 'success')
+    else:
+        flash('Member not found.', 'error')
+    return redirect(url_for('routes.profile', member_id=member_id))

@@ -46,12 +46,12 @@ $(document).ready(function () {
         case_amount: case_amount,
       },
       success: function (response) {
-        alert("Case created successfully.");
+        console.log("Case created successfully.");
         location.reload(); // Reload the page to update case information
       },
       error: function (xhr, status, error) {
         console.error("Failed to create case:", error);
-        alert("Failed to create case. Please try again later.");
+        // alert("Failed to create case. Please try again later.");
       },
     });
   }

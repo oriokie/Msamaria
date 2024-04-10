@@ -25,7 +25,7 @@ $(document).ready(function () {
                         <td><input type="text" name="phone_number" value="${member.phone_number}" readonly></td>
                         <td><input type="checkbox" name="reg_fee_paid" ${member.reg_fee_paid ? "checked" : ""} disabled></td>
                         <td><input type="checkbox" name="is_admin" ${member.is_admin ? "checked" : ""} disabled></td>
-                        <td><input type="checkbox" name="is_active" ${member.active ? "checked" : ""} disabled></td>
+                        <td><input type="checkbox" name="active" ${member.active ? "checked" : ""} disabled></td>
                         <td><input type="checkbox" name="is_deceased" ${member.is_deceased ? "checked" : ""} disabled></td>
                         <td>${member.created_at}</td>
                         <td>${member.updated_at}</td>
@@ -54,7 +54,7 @@ $(document).ready(function () {
         phone_number: $("table input[name='phone_number']").val(),
         reg_fee_paid: $("table input[name='reg_fee_paid']").prop("checked"),
         is_admin: $("table input[name='is_admin']").prop("checked"),
-        is_active: $("table input[name='is_active']").prop("checked"),
+        active: $("table input[name='active']").prop("checked"),
         is_deceased: $("table input[name='is_deceased']").prop("checked"),
         created_at: member.created_at,
         updated_at: member.updated_at,

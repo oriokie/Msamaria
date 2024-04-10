@@ -57,7 +57,7 @@ def update_member(member_id):
         member.phone_number = data.get('phone_number')
         member.reg_fee_paid = data.get('reg_fee_paid')
         member.is_admin = data.get('is_admin')
-        member.active = data.get('is_active')
+        member.active = data.get('active')
         member.is_deceased = data.get('is_deceased')
         # Update dependents (if applicable)
         for dependent_data in data.get('dependents', []):

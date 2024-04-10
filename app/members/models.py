@@ -54,7 +54,7 @@ class Member(UserMixin, db.Model):
             'phone_number': self.phone_number,
             'reg_fee_paid': self.reg_fee_paid,
             'is_admin': self.is_admin,
-            'is_active': self.active,
+            'active': self.active,
             'is_deceased': self.is_deceased,
             'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S") if self.created_at else None,
             'updated_at': self.updated_at.strftime("%Y-%m-%d %H:%M:%S") if self.updated_at else None
@@ -162,8 +162,10 @@ class Member(UserMixin, db.Model):
 
         for case in last_3_cases:
             contribution = Contribution.query.filter_by(member_id=self.id, case_id=case.id).first()
-            if not contribution or not contribution.paid:
+            if contribution and not contribution.paid:
                 counter += 1
+            else:
+                counter += 0
         return (counter)
     
     @property
@@ -182,8 +184,10 @@ class Member(UserMixin, db.Model):
 
         for case in total_cases:
             contribution = Contribution.query.filter_by(member_id=self.id, case_id=case.id).first()
-            if not contribution or not contribution.paid:
+            if contribution and not contribution.paid:
                 counter += 1
+            else:
+                counter += 0
         return (counter)
 
 

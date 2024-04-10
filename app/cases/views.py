@@ -9,6 +9,7 @@ from flask import current_app as app
 from flask import jsonify
 from app.cases.utils import fetch_member_id
 from app.contributions.models import Contribution
+from .active import active_cases_bp
 
 cases_bp = Blueprint('cases', __name__, url_prefix='/cases')
 
@@ -18,9 +19,10 @@ cases_bp = Blueprint('cases', __name__, url_prefix='/cases')
 def search():
     if request.method == 'POST':
         search_query = request.form.get('search_query')
-        members = Member.query.filter(Member.active == True, Member.name.ilike(f'%{search_query}%')).limit(3).all()
+        members = Member.query.filter(Member.active == True,
+                                      Member.name.ilike(f'%{search_query}%')).limit(3).all()
         dependents = Dependent.query.join(Member).filter(
-            Dependent.name.ilike(f'%{search_query}%'), 
+            Dependent.name.ilike(f'%{search_query}%'),
             Member.active.is_(True)
         ).limit(3).all()
 
@@ -44,39 +46,60 @@ def create_case():
 
         # If the member_deceased option is checked, mark the member as deceased
         if member_id and dependent_id is None:
-            member = Member.query.get(member_id, active=True).first()
+            member = Member.query.filter(Member.id == member_id).first()
             if member:
+                member_reg = member.created_at
+                if member.reg_fee_paid == False:
+                    flash('Member has not paid registration fee.', 'error')
+                    return jsonify({'error': 'Member has not paid registration fee'})
+                if datetime.now().month - member_reg.month < 1:
+                    flash('Member has not been active for at least 3 Months.', 'error')
+                    return jsonify({'error': 'Member has not been active for at least 3 Months'})
+                if member.is_deceased == True:
+                    flash('Member is already deceased', 'error')
+                    return jsonify({'error': 'Member is already deceased'})
+                if member.active == False:
+                    flash('Cannot create case for inactive member', 'error')
+                    return jsonify({'error': 'Cannot create case for inactive member'})
                 member.mark_deceased()
 
-        # Check if the dependent's associated member is active
         if dependent_id:
-            dependent = Dependent.query.get(dependent_id)
-            if dependent and dependent.member.active == False:
-                flash('Cannot create case for inactive member.', 'error')
-                return redirect(url_for('cases.search'))
-
-        if dependent_id:
-            dependent = Dependent.query.get(dependent_id)
+            dependent = Dependent.query.filter_by(id=dependent_id).first()
             if dependent:
-                # Mark dependent as deceased
+                member_reg = dependent.member.created_at
+                if dependent.member.reg_fee_paid == False:
+                    flash('Member has not paid registration fee.', 'error')
+                    return jsonify({'error': 'Member has not paid registration fee'})
+                if datetime.now().month - member_reg.month < 1:
+                    flash('Member has not been active for at least 3 Months.', 'error')
+                    return jsonify({'error': 'Member has not been active for at least 3 Months'})
+                if dependent.member.is_deceased == True:
+                    flash('Member is already deceased', 'error')
+                    return jsonify({'error': 'Member is already deceased'})
+                if dependent.is_deceased == True:
+                    flash('Dependent is already deceased', 'error')
+                    return jsonify({'error': 'Dependent is already deceased'})
+                if dependent.member.active == False:
+                    flash('Cannot create case for inactive member', 'error')
+                    return jsonify({'error': 'Cannot create case for inactive member'})
                 dependent.mark_deceased()
 
         # Create the case
         case = Case(member_id=member_id, dependent_id=dependent_id, case_amount=case_amount)
         db.session.add(case)
         db.session.commit()
-        flash('Case created successfully.', 'success')
-
         # Generate contribution records for all active members
         generate_contributions_for_case(case)
-
-        return redirect(url_for('cases.search'))
+        flash('Case created successfully.', 'success')
+        #return jsonify({'message': 'Case created successfully'})
+        return redirect(url_for('active_cases.view_active_cases'))
     
     except Exception as e:
         db.session.rollback()
         flash('An error occurred while creating the case. Please try again.', 'error')
         app.logger.error(f'Error creating case: {str(e)}')
-        return redirect(url_for('cases.search'))
+        return jsonify({'error': 'An Error Occured'}), 404
+        #return redirect(url_for('cases.search'))
 
 @cases_bp.route('/get-member-id', methods=['POST'])
 @login_required

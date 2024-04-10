@@ -1,0 +1,40 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  <h1>Generate Reports</h1>
+
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h2 class="card-title">Active Members Report</h2>
+          <form action="{{ url_for('reports.generate_active_members_report') }}" method="get">
+            <button type="submit" class="btn btn-primary">Download</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h2 class="card-title">Inactive Members Report</h2>
+          <form action="{{ url_for('reports.generate_inactive_members_report') }}" method="get">
+            <button type="submit" class="btn btn-primary">Download</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h2 class="card-title">Case Summary Report</h2>
+          <form action="{{ url_for('reports.generate_case_summary_report') }}" method="get">
+            <button type="submit" class="btn btn-primary">Download</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

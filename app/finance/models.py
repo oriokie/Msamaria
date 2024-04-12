@@ -56,3 +56,8 @@ class Expense(db.Model):
         for expense in expenses:
             total += expense.amount
         return total
+    
+    def update(self, description, amount):
+        self.description = description
+        self.amount = amount
+        db.session.commit()

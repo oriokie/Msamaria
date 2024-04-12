@@ -1,0 +1,11 @@
+<!-- templates/expenses_table_rows.html -->
+{% for expense in expenses %}
+<tr>
+  <td>{{ expense.id }}</td>
+  <td>{{ expense.case_id }}</td>
+  <td>{{ expense.description }}</td>
+  <td>{{ expense.amount }}</td>
+  <td>{{ expense.created_at }}</td>
+  <td>{{ expense.updated_at }}</td>
+</tr>
+{% endfor %}

@@ -47,11 +47,12 @@ $(document).ready(function () {
       },
       success: function (response) {
         console.log("Case created successfully.");
+        alert("Case created successfully.");
         location.reload(); // Reload the page to update case information
       },
       error: function (xhr, status, error) {
         console.error("Failed to create case:", error);
-        // alert("Failed to create case. Please try again later.");
+        alert("Failed to create case. Please try again later.");
       },
     });
   }

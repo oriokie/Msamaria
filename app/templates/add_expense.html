@@ -1,0 +1,31 @@
+<!-- templates/add_expense.html -->
+{% extends "base.html" %} {% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <div class="card mt-5">
+        <div class="card-header">
+          <h1 class="card-title">Add Expense for Case {{ case_id }}</h1>
+        </div>
+        <div class="card-body">
+          <form action="{{ url_for('expenses.add_expense') }}" method="POST">
+            <input type="hidden" name="case_id" value="{{ case_id }}" />
+            <div class="mb-3">
+              <label for="description" class="form-label">Description:</label>
+              <input type="text" id="description" name="description" class="form-control" required />
+            </div>
+            <div class="mb-3">
+              <label for="amount" class="form-label">Amount:</label>
+              <input type="number" id="amount" name="amount" class="form-control" step="0.01" required />
+            </div>
+            <div class="text-center">
+              <button type="submit" class="btn btn-primary">Submit</button>
+              <a href="{{ url_for('expenses.expenses') }}" class="btn btn-secondary">Back to Expenses</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

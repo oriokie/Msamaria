@@ -1,12 +1,18 @@
 {% extends "base.html" %} {% block content %}
 <div id="bar-chart"></div>
-
+<div id="pie-chart"></div>
 <script>
   // Load chart JSON data
   var chartJson = {{ chart_json | safe }};
 
   // Render chart
   Plotly.newPlot('bar-chart', chartJson.data, chartJson.layout);
+
+  // Load pie chart JSON data
+  var pieChartJson = {{ pie_chart_json | safe }};
+
+  // Render pie chart
+  Plotly.newPlot('pie-chart', pieChartJson.data, pieChartJson.layout);
 </script>
 
 {% endblock %}

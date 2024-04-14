@@ -180,7 +180,7 @@ def total_collections_chart():
     current_app.logger.info("Case IDs: %s", case_ids)
     current_app.logger.info("Total Amounts: %s", total_amount_contributed)
 
-    # Create a bar chart
+    # Create a bar chartx
     bar_chart = go.Bar(
         x=case_ids,
         y=total_amount_contributed,
@@ -200,5 +200,32 @@ def total_collections_chart():
     # Convert figure to JSON for embedding in HTML
     chart_json = fig.to_json()
 
+        # Calculate the counts of active members who have contributed and not contributed to the most recent case
+    recent_case = Case.query.order_by(Case.id.desc()).first()
+    active_members_contributed = len(set(contribution.member_id for contribution in recent_case.contributions if contribution.paid))
+    active_members_not_contributed = len(set(contribution.member_id for contribution in recent_case.contributions if not contribution.paid))
 
-    return render_template('total_collections_chart.html', chart_json=chart_json)
+    # Create labels and values for the pie chart
+    pie_labels = ['Contributed', 'Not Contributed']
+    pie_values = [active_members_contributed, active_members_not_contributed]
+
+    # Create a pie chart
+    pie_chart = go.Pie(
+        labels=pie_labels,
+        values=pie_values,
+        hole=0.3  # Set the size of the center hole
+    )
+
+    # Create layout for the pie chart
+    pie_layout = go.Layout(
+        title='Contribution Status for Most Recent Case',
+    )
+
+    # Create figure for the pie chart
+    pie_fig = go.Figure(data=[pie_chart], layout=pie_layout)
+
+    # Convert pie chart figure to JSON for embedding in HTML
+    pie_chart_json = pie_fig.to_json()
+
+
+    return render_template('total_collections_chart.html', chart_json=chart_json, pie_chart_json=pie_chart_json)

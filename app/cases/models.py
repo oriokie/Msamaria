@@ -79,4 +79,3 @@ class Case(db.Model):
         self.closed_at = datetime.utcnow()
         db.session.commit()
         return self
-

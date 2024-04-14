@@ -26,6 +26,18 @@ class Contribution(db.Model):
         return contribution
     
     @classmethod
+    def bulk_mark_as_paid(cls, member_id, case_id):
+        contribution = cls.query.filter_by(member_id=member_id, case_id=case_id).first()
+        if contribution:  # Check if a contribution is found
+            contribution.paid = True
+            db.session.commit()
+        else:
+            # Handle case where no contribution is found for the member and case_id
+            print(f'No contribution found for member {member_id} and case {case_id}')
+        return contribution  # Consider returning the updated contribution object
+
+
+    @classmethod
     def get_contributions(cls):
         return cls.query.all()
     

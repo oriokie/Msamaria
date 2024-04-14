@@ -59,6 +59,31 @@ $(document).ready(function () {
         created_at: member.created_at,
         updated_at: member.updated_at,
       };
+
+      // Fetch updated dependents data from the HTML
+      var updatedDependents = [];
+      $("table tbody tr").each(function () {
+        var dependentId = $(this).find("input[name='dependent_ids[]']").val();
+        var dependentName = $(this).find("input[name='dependent_names[]']").val();
+        var dependentRelationship = $(this).find("input[name='dependent_relationships[]']").val();
+        if (dependentId) {
+          // Skip empty rows
+          console.log("Dependent ID:", dependentId);
+          console.log("Dependent Name:", dependentName);
+          console.log("Dependent Relationship:", dependentRelationship);
+
+          // Include updated dependents data in the member object
+          updatedDependents.push({
+            id: dependentId,
+            name: dependentName,
+            relationship: dependentRelationship,
+          });
+        }
+      });
+
+      // Include updated dependents data in the member object
+      updatedMember.dependents = updatedDependents;
+
       // Send updated member details to the server for updating in the database
       $.ajax({
         type: "POST",
@@ -85,6 +110,7 @@ $(document).ready(function () {
             <table class="table table-striped table-bordered">
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Name</th>
                         <th>Relationship</th>
                         <th>Actions</th>
@@ -94,6 +120,7 @@ $(document).ready(function () {
     dependents.forEach(function (dependent) {
       dependentTableHtml += `
                     <tr>
+                        <td><input type="text" name="dependent_ids[]" value="${dependent.id}" readonly></td>
                         <td><input type="text" name="dependent_names[]" value="${dependent.name}" readonly></td>
                         <td><input type="text" name="dependent_relationships[]" value="${dependent.relationship}" readonly></td>
                         <td>
@@ -177,4 +204,22 @@ $(document).ready(function () {
       },
     });
   });
+
+  // Function to handle updating dependents
+  function updateDependents(memberId, updatedDependents) {
+    $.ajax({
+      type: "POST",
+      url: `/admin/update_dependents/${memberId}`,
+      contentType: "application/json",
+      data: JSON.stringify(updatedDependents), // Send updated dependents directly
+      success: function (response) {
+        console.log("Dependents updated successfully");
+        // Handle success as needed
+      },
+      error: function (xhr, status, error) {
+        console.error("Failed to update dependents:", error);
+        // Handle error or display error message as needed
+      },
+    });
+  }
 });

@@ -65,10 +65,32 @@ def update_member(member_id):
             dependent = Dependent.query.get(dependent_id)
             if dependent:
                 dependent.name = dependent_data.get('name')
+                dependent.relationship = dependent_data.get('relationship')
         db.session.commit()
-        return jsonify({'message': 'Member details updated successfully'})
+        return jsonify({'message': 'Member details and dependents updated successfully'})
     else:
         return jsonify({'error': 'Member not found'}), 404
+    
+# Route for updating dependents
+@admin_bp.route('/update_dependents/<int:member_id>', methods=['POST'])
+@login_required
+def update_dependents(member_id):
+    member = Member.query.get(member_id)
+    if member:
+        # Extract updated dependents data from the request
+        data = request.json
+        updated_dependents = data.get('dependents', [])
+        for dependent_data in updated_dependents:
+            dependent_id = dependent_data.get('id')
+            dependent = Dependent.query.get(dependent_id)
+            if dependent:
+                dependent.name = dependent_data.get('name')
+                dependent.relationship = dependent_data.get('relationship')
+        db.session.commit()
+        return jsonify({'message': 'Dependents updated successfully'})
+    else:
+        return jsonify({'error': 'Member not found'}), 404
+
 
 # Route for deleting a dependent
 @admin_bp.route('/delete_dependent/<int:dependent_id>', methods=['DELETE'])

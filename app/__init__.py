@@ -38,6 +38,7 @@ def create_app(config=None):
     from app.finance.views import expense_bp
     from app.registration.views import reg_bp
     from app.reports.routes import reports_bp
+    from app.registration.reg import regnew_bp
 
     app.register_blueprint(members_bp)
     app.register_blueprint(routes_bp)
@@ -50,6 +51,7 @@ def create_app(config=None):
     app.register_blueprint(expense_bp)
     app.register_blueprint(reg_bp)
     app.register_blueprint(reports_bp)
+    app.register_blueprint(regnew_bp)
 
     # Import and register models to create database tables
     from app.members import models

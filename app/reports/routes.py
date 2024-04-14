@@ -5,7 +5,7 @@ import io
 from app.members.models import Member
 from app.cases.models import Case
 from app.members.models import Dependent
-
+from app.cases.utils import fetch_member_id, get_member_name, get_dependent_name
 
 reports_bp = Blueprint('reports', __name__)
 
@@ -90,3 +90,68 @@ def generate_csv(data):
     for row in data:
         writer.writerow(row)
     return output.getvalue()
+
+@reports_bp.route('/case_summary')
+def case_summary():
+    # Query database to get information about all cases
+    cases = Case.query.all()
+
+    # Initialize a list to store case summaries
+    case_summaries = []
+
+    total_amount_contributed_sum = 0
+    active_members_contributed_sum = 0
+    active_members_not_contributed_sum = 0
+    total_expenses_sum = 0
+    total_amount_sum = 0
+
+    for case in cases:
+        if case.dependent_id:
+            deceased_member = get_dependent_name(case.dependent_id)
+        else:
+            deceased_member = get_member_name(case.member_id)
+
+        # Calculate total expenses for the case
+        total_expenses = sum(expense.amount for expense in case.expenses)
+
+        # Calculate summary information for each case
+        active_members_contributed = len(set(contribution.member_id for contribution in case.contributions if contribution.paid))
+        active_members_not_contributed = len(set(contribution.member_id for contribution in case.contributions if not contribution.paid))
+        total_amount_contributed = active_members_contributed * case.case_amount
+        total_amount = total_amount_contributed - total_expenses
+
+        # Update the sum of each column
+        total_amount_contributed_sum += total_amount_contributed
+        active_members_contributed_sum += active_members_contributed
+        active_members_not_contributed_sum += active_members_not_contributed
+        total_expenses_sum += total_expenses
+        total_amount_sum += total_amount
+
+        # Create a dictionary to store case summary information
+        case_summary = {
+            'id': case.id,
+            'deceased_person': deceased_member,
+            'total_amount_contributed': total_amount_contributed,
+            'active_members_contributed': active_members_contributed,
+            'active_members_not_contributed': active_members_not_contributed,
+            'total_expenses': total_expenses,
+            'total_amount': total_amount,
+        }
+
+        # Append the case summary to the list
+        case_summaries.append(case_summary)
+
+    # Add a row for the summation of totals
+    total_row = {
+        'id': 'Total',
+        'deceased_person': '',
+        'total_amount_contributed': total_amount_contributed_sum,
+        'active_members_contributed': active_members_contributed_sum,
+        'active_members_not_contributed': active_members_not_contributed_sum,
+        'total_expenses': total_expenses_sum,
+        'total_amount': total_amount_sum,
+    }
+    case_summaries.append(total_row)
+
+    return generate_csv_response(case_summaries, 'case_summary_report.csv')
+

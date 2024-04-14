@@ -200,7 +200,7 @@ def total_collections_chart():
     # Convert figure to JSON for embedding in HTML
     chart_json = fig.to_json()
 
-        # Calculate the counts of active members who have contributed and not contributed to the most recent case
+    # Calculate the counts of active members who have contributed and not contributed to the most recent case
     recent_case = Case.query.order_by(Case.id.desc()).first()
     active_members_contributed = len(set(contribution.member_id for contribution in recent_case.contributions if contribution.paid))
     active_members_not_contributed = len(set(contribution.member_id for contribution in recent_case.contributions if not contribution.paid))

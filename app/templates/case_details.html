@@ -32,4 +32,27 @@
     </tbody>
   </table>
 </div>
+
+<div id="pie-chart"></div>
+<script>
+  // Load pie chart JSON data
+  var pieChartJson = {{ pie_chart_json | safe }};
+
+  // Render pie chart
+  Plotly.newPlot('pie-chart', pieChartJson.data, pieChartJson.layout);
+</script>
+
+<div>
+  <h2>Members Not Contributed</h2>
+  {% if not_paid_names %}
+  <p>The following members have not contributed: for case: {{ case_id }}</p>
+  <ol style="list-style-type: none">
+    {% for index, member_name in not_paid_names %}
+    <li><code>{{ index }}. {{ member_name }}</code></li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <p>No defaulting members found for this case.</p>
+  {% endif %}
+</div>
 {% endblock %}

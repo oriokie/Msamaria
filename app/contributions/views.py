@@ -8,6 +8,7 @@ from flask import Blueprint
 from sqlalchemy.sql import func
 from app.cases.utils import fetch_member_id, get_member_name, get_dependent_name
 from app.finance.models import Expense
+import plotly.graph_objs as go
 
 # Define a Blueprint for the contributions route
 contributions_bp = Blueprint('contributions', __name__, url_prefix='/contributions')
@@ -154,20 +155,59 @@ def case_details(case_id):
 
     # Initialize lists to store member names and contribution amounts
     member_names = []
+    members_not_paid = []
 
     # Iterate over contributions to gather member names and calculate total contributed amount
     for contribution in contributions:
         member = Member.query.get(contribution.member_id)
         if member and contribution.paid:
             member_names.append(member.name)
+        elif member and not contribution.paid:
+            members_not_paid.append(member.name)
     
         # Pre-enumerate the member names list
     enumerated_member_names = list(enumerate(member_names, start=1))
+    not_paid_names = list(enumerate(members_not_paid, start=1))
 
     number_of_contributions = len(enumerated_member_names)
     total_amount_contributed = number_of_contributions * case.case_amount
 
     # Pass the case and contribution information to the template for rendering
 
-    return render_template('case_details.html', case=case, enumerated_member_names=enumerated_member_names, deceased_person=deceased_member, total_amount_contributed=total_amount_contributed, number_of_contributions=number_of_contributions)
+    # ___________________________PIE CHART______________________________________________________
+
+    # Calculate the counts of active members who have contributed and not contributed to the most recent case
+    active_members_contributed = len(set(contribution.member_id for contribution in case.contributions if contribution.paid))
+    active_members_not_contributed = len(set(contribution.member_id for contribution in case.contributions if not contribution.paid))
+
+    # Create labels and values for the pie chart
+    pie_labels = ['Contributed', 'Not Contributed']
+    pie_values = [active_members_contributed, active_members_not_contributed]
+
+    # Create a pie chart
+    pie_chart = go.Pie(
+        labels=pie_labels,
+        values=pie_values,
+        hole=0.4,  # Set the size of the center hole
+        pull=[0, 0.3]
+    )
+
+    # Create layout for the pie chart
+    pie_layout = go.Layout(
+        title='Distribution of Contributions',
+    )
+
+    # Create figure for the pie chart
+    pie_fig = go.Figure(data=[pie_chart], layout=pie_layout)
+
+    # Convert pie chart figure to JSON for embedding in HTML
+    pie_chart_json = pie_fig.to_json()
+
+    return render_template('case_details.html', case=case,
+                           enumerated_member_names=enumerated_member_names,
+                            not_paid_names=not_paid_names,
+                           deceased_person=deceased_member,
+                           total_amount_contributed=total_amount_contributed,
+                           pie_chart_json=pie_chart_json,
+                           number_of_contributions=number_of_contributions)
 

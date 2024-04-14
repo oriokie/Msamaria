@@ -113,7 +113,7 @@ def get_member_id():
 
 # Function to generate contribution records for all active members when a new case is created
 def generate_contributions_for_case(case):
-    active_members = Member.query.filter_by(active=True).all()
+    active_members = Member.query.filter_by(active=True, reg_fee_paid=True, is_deceased=False).all()
     for member in active_members:
         contribution = Contribution(
             member_id=member.id,

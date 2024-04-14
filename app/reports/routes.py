@@ -155,3 +155,50 @@ def case_summary():
 
     return generate_csv_response(case_summaries, 'case_summary_report.csv')
 
+
+import plotly.graph_objs as go
+from flask import current_app
+
+@reports_bp.route('/total_collections_chart')
+def total_collections_chart():
+    # Query database to get information about the 10 most recent cases
+    cases = Case.query.order_by(Case.id.desc()).limit(10).all()
+
+    # Extract data for the chart
+    case_ids = []
+    total_amount_contributed = []
+
+    for case in cases:
+        case_ids.append(case.id)
+        # Calculate summary information for each case
+        active_members_contributed = len(set(contribution.member_id for contribution in case.contributions if contribution.paid))
+        total_amount = active_members_contributed * case.case_amount
+
+        # Calculate total amount contributed for each case
+        total_amount_contributed.append(total_amount)
+
+    current_app.logger.info("Case IDs: %s", case_ids)
+    current_app.logger.info("Total Amounts: %s", total_amount_contributed)
+
+    # Create a bar chart
+    bar_chart = go.Bar(
+        x=case_ids,
+        y=total_amount_contributed,
+        marker=dict(color='blue')  # Set color of bars
+    )
+
+    # Create layout for the chart
+    layout = go.Layout(
+        title='Total Collections for Current 10 Cases',
+        xaxis=dict(title='Case ID'),
+        yaxis=dict(title='Total Amount Contributed')
+    )
+
+    # Create figure
+    fig = go.Figure(data=[bar_chart], layout=layout)
+
+    # Convert figure to JSON for embedding in HTML
+    chart_json = fig.to_json()
+
+
+    return render_template('total_collections_chart.html', chart_json=chart_json)

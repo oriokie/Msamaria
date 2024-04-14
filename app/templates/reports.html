@@ -35,6 +35,17 @@
         </div>
       </div>
     </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h2 class="card-title">Collection Trend</h2>
+          <form action="{{ url_for('reports.total_collections_chart') }}" method="get">
+            <button type="submit" class="btn btn-primary">View</button>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

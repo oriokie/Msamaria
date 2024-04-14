@@ -1,0 +1,12 @@
+{% extends "base.html" %} {% block content %}
+<div id="bar-chart"></div>
+
+<script>
+  // Load chart JSON data
+  var chartJson = {{ chart_json | safe }};
+
+  // Render chart
+  Plotly.newPlot('bar-chart', chartJson.data, chartJson.layout);
+</script>
+
+{% endblock %}

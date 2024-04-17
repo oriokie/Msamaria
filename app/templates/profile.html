@@ -245,6 +245,9 @@
                 <form action="{{ url_for('routes.register_fee', member_id=member.id) }}" method="post">
                   <button type="submit" class="btn btn-primary">Register</button>
                 </form>
+                <form action="{{ url_for('registration.decline_registration', member_id=member.id) }}" method="post" style="display: inline;">
+                  <button type="submit" class="btn btn-danger">Decline</button>
+                </form>
               </td>
             </tr>
             {% endfor %}
@@ -255,6 +258,6 @@
       {% endif %}
     </div>
   </div>
-
-  {% endblock %}
 </div>
+  {% endblock %}
+

@@ -1,0 +1,131 @@
+{% extends 'base.html' %} {% block content %}
+
+<div class="container">
+  <h1 class="mb-4">Register Member and Add Dependents</h1>
+
+  <!-- Member Information Form -->
+  <form id="memberForm" method="POST">
+    <div class="mb-3">
+      <label for="name" class="form-label">Name:</label>
+      <input type="text" class="form-control" id="name" name="name" required />
+    </div>
+
+    <div class="mb-3">
+      <label for="id_number" class="form-label">ID Number:</label>
+      <input type="text" class="form-control" id="id_number" name="id_number" required />
+    </div>
+
+    <div class="mb-3">
+      <label for="phone_number" class="form-label">Phone Number:</label>
+      <input type="text" class="form-control" id="phone_number" name="phone_number" required />
+    </div>
+
+    <!-- Dependent Information Form -->
+    <h2 class="mb-3">Add Dependents</h2>
+    <div id="dependentsContainer">
+      <!-- Dependent Fields will be dynamically added here -->
+      <div class="dependentFields">
+        <div class="mb-3">
+          <label for="dependent_name" class="form-label">Dependent Name:</label>
+          <input type="text" class="form-control dependent_name" name="dependent_name" />
+        </div>
+
+        <div class="mb-3">
+          <label for="dependent_phone_number" class="form-label">Dependent Phone Number:</label>
+          <input type="text" class="form-control dependent_phone_number" name="dependent_phone_number" />
+        </div>
+
+        <div class="mb-3">
+          <label for="relationship" class="form-label">Relationship:</label>
+          <input type="text" class="form-control relationship" name="relationship" />
+        </div>
+
+        <!-- Button to remove this dependent -->
+        <button type="button" class="btn btn-danger removeDependentBtn">Remove Dependent</button>
+      </div>
+    </div>
+
+    <!-- Button to add more dependents -->
+    <button type="button" class="btn btn-secondary mb-3" id="addDependentBtn">Add Dependent</button>
+
+    <!-- Submit button -->
+    <button type="button" class="btn btn-primary" id="submitBtn">Submit</button>
+  </form>
+</div>
+
+<style>
+  .dependentFields {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 20px;
+  }
+</style>
+
+<script>
+  // JavaScript code for adding and removing dependent fields dynamically
+  document.getElementById("addDependentBtn").addEventListener("click", function () {
+    addDependentField();
+  });
+
+  function addDependentField() {
+    const dependentsContainer = document.getElementById("dependentsContainer");
+
+    // Create dependent fields dynamically
+    const dependentFields = `
+        <div class="dependentFields">
+            <div class="mb-3">
+              <label for="dependent_name" class="form-label">Dependent Name:</label>
+              <input type="text" class="form-control dependent_name" name="dependent_name">
+            </div>
+
+            <div class="mb-3">
+              <label for="dependent_phone_number" class="form-label">Dependent Phone Number:</label>
+              <input type="text" class="form-control dependent_phone_number" name="dependent_phone_number">
+            </div>
+
+            <div class="mb-3">
+              <label for="relationship" class="form-label">Relationship:</label>
+              <input type="text" class="form-control relationship" name="relationship">
+            </div>
+
+            <!-- Button to remove this dependent -->
+            <button type="button" class="btn btn-danger removeDependentBtn">Remove Dependent</button>
+        </div>
+    `;
+    dependentsContainer.insertAdjacentHTML("beforeend", dependentFields);
+
+    // Add event listener to newly added remove button
+    const removeButtons = document.querySelectorAll(".removeDependentBtn");
+    removeButtons.forEach((button) => {
+      button.addEventListener("click", function () {
+        this.parentElement.remove(); // Remove the parent div (dependentFields)
+      });
+    });
+  }
+
+  // Automatically add one dependent field on page load
+  addDependentField();
+
+  // Ensure at least one dependent field is present before submitting
+  document.getElementById("submitBtn").addEventListener("click", function () {
+    const dependentFields = document.querySelectorAll(".dependentFields");
+    let isValid = false;
+    dependentFields.forEach((field) => {
+      const dependentName = field.querySelector(".dependent_name").value.trim();
+      const dependentPhoneNumber = field.querySelector(".dependent_phone_number").value.trim();
+      const dependentRelationship = field.querySelector(".relationship").value.trim();
+
+      console.log(dependentName, dependentPhoneNumber, dependentRelationship);
+      if (dependentName !== "" && dependentPhoneNumber !== "" && dependentRelationship !== "") {
+        isValid = true;
+      }
+    });
+    if (isValid) {
+      document.getElementById("memberForm").submit();
+    } else {
+      alert("Please fill in all dependent fields or remove empty dependents.");
+    }
+  });
+</script>
+
+{% endblock %}

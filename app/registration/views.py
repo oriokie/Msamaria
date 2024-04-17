@@ -22,3 +22,14 @@ def register_fee(member_id):
     else:
         flash('Member not found.', 'error')
     return redirect(url_for('routes.profile', user_id=member_id))
+
+@reg_bp.route('/decline_registration/<int:member_id>', methods=['POST'])
+def decline_registration(member_id):
+    # Retrieve the member by ID
+    member = Member.query.get(member_id)
+    if member:
+        Member.delete(member)
+        flash('Registration declined.', 'success')
+    else:
+        flash('Member not found.', 'error')
+    return redirect(url_for('routes.profile', user_id=member_id))

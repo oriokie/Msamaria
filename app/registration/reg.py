@@ -1,43 +1,51 @@
-from flask import render_template, redirect, url_for, Blueprint
+# Import necessary modules
+from flask import render_template, Blueprint, request, jsonify
 from app import db
 from app.members.models import Member
 from app.dependents.models import Dependent
-from app.registration.form import RegistrationForm
 
+# Create a Blueprint for the registration routes
 regnew_bp = Blueprint('regnew', __name__)
 
-@regnew_bp.route('/regnew', methods=['GET', 'POST'])
-def register():
-    form = RegistrationForm()
-    if form.validate_on_submit():
-        # Create a new Member instance and populate its fields
-        member = Member(
-            name=form.name.data,
-            id_number=form.id_number.data,
-            phone_number=form.phone_number.data,
-            password_hash=form.password.data,  # You should hash the password here
-            reg_fee_paid=form.reg_fee_paid.data,
-            is_admin=form.is_admin.data,
-            is_deceased=form.is_deceased.data
-        )
-        
-        # Add dependents to the member if provided
-        for dependent_data in form.dependents.data:
-            if dependent_data['name']:
-                dependent = Dependent(
-                    name=dependent_data['name'],
-                    phone_number=dependent_data['phone_number'],
-                    relationship=dependent_data['relationship']
-                )
-                member.dependents.append(dependent)
+# Route for rendering the registration form
+@regnew_bp.route('/regnew', methods=['GET'])
+def render_registration_form():
+    return render_template('registration_form.html')
 
-        # Add the member to the database
-        db.session.add(member)
+# Route for processing member registration and dependent addition
+@regnew_bp.route('/regnew', methods=['POST'])
+def register_and_add_dependents():
+    try:
+        # Extract member data from the request form
+        member_name = request.form.get('name')
+        member_id_number = request.form.get('id_number')
+        member_phone_number = request.form.get('phone_number')
+        password = member_phone_number
+
+        # Create a new member object
+        new_member = Member(name=member_name, id_number=member_id_number, phone_number=member_phone_number, password=password)
+        
+        # Add the new member to the database
+        db.session.add(new_member)
         db.session.commit()
-        
-        # Redirect to a success page or any other page
-        return redirect(url_for('success'))
 
-    return render_template('regnew.html', form=form)
+        # Extract dependent data from the request form
+        dependents = request.form.getlist('dependent_name')
+        phone_numbers = request.form.getlist('dependent_phone_number')
+        relationships = request.form.getlist('relationship')
 
+        # Check if dependent data is provided
+        if dependents and dependents[0] != '' and dependents[0] != ' ' and dependents[0] != None:
+            # Create and add dependents associated with the member
+            for name, phone_number, relationship in zip(dependents, phone_numbers, relationships):
+                new_dependent = Dependent(name=name, phone_number=phone_number, relationship=relationship, member_id=new_member.id)
+                db.session.add(new_dependent)
+                db.session.commit()
+    
+        # Return success message
+        return jsonify({'message': 'Member registered and dependents added successfully'}), 200
 
+    except Exception as e:
+        # Rollback changes and return error message
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500

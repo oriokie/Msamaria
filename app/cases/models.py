@@ -20,8 +20,6 @@ class Case(db.Model):
     # Define a one-to-many relationship with Expense model
     expenses = relationship("Expense", backref="case", lazy="dynamic")
 
-
-
     def __init__(self, member_id, dependent_id=None, case_amount=0.0):
         self.member_id = member_id
         self.dependent_id = dependent_id

@@ -166,8 +166,10 @@ def case_details(case_id):
             members_not_paid.append(member.name)
     
         # Pre-enumerate the member names list
-    enumerated_member_names = list(enumerate(member_names, start=1))
-    not_paid_names = list(enumerate(members_not_paid, start=1))
+    sorted_member_names = sorted(member_names)
+    sorted_members_not_paid = sorted(members_not_paid)
+    enumerated_member_names = list(enumerate(sorted_member_names, start=1))
+    not_paid_names = list(enumerate(sorted_members_not_paid, start=1))
 
     number_of_contributions = len(enumerated_member_names)
     total_amount_contributed = number_of_contributions * case.case_amount

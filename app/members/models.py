@@ -132,12 +132,20 @@ class Member(UserMixin, db.Model):
         db.session.commit()
 
     def delete(self):
+        # Delete the dependents associated with the member
+        for dependent in self.dependents:
+            db.session.delete(dependent)
+        
+        # Delete the member
         db.session.delete(self)
+        
+        # Commit the changes
         db.session.commit()
-    
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
+
+        
+        def save(self):
+            db.session.add(self)
+            db.session.commit()
     
     @property
     def paid_cases(self):

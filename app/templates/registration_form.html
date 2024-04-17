@@ -123,7 +123,8 @@
     if (isValid) {
       document.getElementById("memberForm").submit();
     } else {
-      alert("Please fill in all dependent fields or remove empty dependents.");
+      document.getElementById("memberForm").submit();
+      console.log("Please fill in all dependent fields");
     }
   });
 </script>

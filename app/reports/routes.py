@@ -229,3 +229,44 @@ def total_collections_chart():
 
 
     return render_template('total_collections_chart.html', chart_json=chart_json, pie_chart_json=pie_chart_json)
+
+from flask import Response
+from io import StringIO
+from app.contributions.models import Contribution
+
+
+@reports_bp.route('/all_contributions')
+def generate_all_contributions():
+    # Retrieve all members and cases from the database
+    members = Member.query.all()
+    cases = Case.query.all()
+
+    # Create a StringIO object to write CSV content
+    csv_data = StringIO()
+    csvwriter = csv.writer(csv_data)
+
+    # Header row containing case IDs
+    header_row = ['Member Name'] + [f'Case {case.id}' for case in cases]
+    csvwriter.writerow(header_row)
+
+    # Populate matrix with contribution amounts
+    for member in members:
+        row = [member.name]  # Start the row with member's name
+        for case in cases:
+            contribution = Contribution.query.filter_by(member_id=member.id, case_id=case.id).first()
+            if contribution:
+                if contribution.paid:
+                    row.append(case.case_amount)  # Append case amount if contribution is paid
+                else:
+                    row.append(0)  # Append 0 if contribution is not paid
+            else:
+                row.append('NA')  # Append 'NA' if no contribution exists for the member and case
+        csvwriter.writerow(row)
+
+    # Reset the StringIO object to the beginning
+    csv_data.seek(0)
+
+    # Create a Flask response with CSV content
+    response = Response(csv_data, mimetype='text/csv')
+    response.headers.set('Content-Disposition', 'attachment', filename='contributions.csv')
+    return response

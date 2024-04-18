@@ -84,18 +84,15 @@ def undo_contribution():
 #     return redirect(url_for('contributions.search_members'))
 
 # # Function to generate contributions for a case
-# def generate_contributions_for_case(case, bereaved_member_id):
+# def generate_contributions_for_case(case):
 #     active_members = Member.query.filter_by(is_deceased=False).all()
 #     for member in active_members:
-#         # Skip generating contributions for the bereaved member
-#         if member.id == bereaved_member_id:
-#             continue
-        
 #         contribution = Contribution.query.filter_by(member_id=member.id, case_id=case.id).first()
 #         if not contribution:
 #             contribution = Contribution(member_id=member.id, case_id=case.id)
 #             db.session.add(contribution)
 #     db.session.commit()
+#     return
 
 # Define a route for the summary page
 @contributions_bp.route('/case_summary')

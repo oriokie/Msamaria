@@ -61,6 +61,7 @@ def create_case():
                 if member.active == False:
                     flash('Cannot create case for inactive member', 'error')
                     return jsonify({'error': 'Cannot create case for inactive member'})
+                bereaved_member_id = member_id
                 member.mark_deceased()
 
         if dependent_id:
@@ -82,6 +83,7 @@ def create_case():
                 if dependent.member.active == False:
                     flash('Cannot create case for inactive member', 'error')
                     return jsonify({'error': 'Cannot create case for inactive member'})
+                bereaved_member_id = dependent.member_id
                 dependent.mark_deceased()
 
         # Create the case
@@ -90,7 +92,7 @@ def create_case():
         db.session.commit()
         # Generate contribution records for all active members
         
-        generate_contributions_for_case(case, bereaved_member_id = member_id)
+        generate_contributions_for_case(case, bereaved_member_id)
 
         flash('Case created successfully.', 'success')
         #return jsonify({'message': 'Case created successfully'})

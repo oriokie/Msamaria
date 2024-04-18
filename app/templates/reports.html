@@ -1,12 +1,12 @@
 {% extends 'base.html' %} {% block content %}
 <div class="container">
-  <h1>Generate Reports</h1>
+  <h1 class="mb-4">Generate Reports</h1>
 
   <!-- Admin Reports -->
   {% if current_user.is_admin %}
   <div class="row">
-    <div class="col-md-4">
-      <div class="card">
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card h-100">
         <div class="card-body">
           <h2 class="card-title">Active Members Report</h2>
           <form action="{{ url_for('reports.generate_active_members_report') }}" method="get">
@@ -16,8 +16,8 @@
       </div>
     </div>
 
-    <div class="col-md-4">
-      <div class="card">
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card h-100">
         <div class="card-body">
           <h2 class="card-title">Inactive Members Report</h2>
           <form action="{{ url_for('reports.generate_inactive_members_report') }}" method="get">
@@ -27,11 +27,22 @@
       </div>
     </div>
 
-    <div class="col-md-4">
-      <div class="card">
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card h-100">
         <div class="card-body">
-          <h2 class="card-title">All Contributions for Members</h2>
+          <h2 class="card-title">All Contributions for all Members</h2>
           <form action="{{ url_for('reports.generate_all_contributions') }}" method="get">
+            <button type="submit" class="btn btn-primary">Download</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h2 class="card-title">All Contributions for Active Members</h2>
+          <form action="{{ url_for('reports.generate_all_contributions_active') }}" method="get">
             <button type="submit" class="btn btn-primary">Download</button>
           </form>
         </div>
@@ -40,8 +51,8 @@
     {% endif %}
 
     <!-- User Reports -->
-    <div class="col-md-4">
-      <div class="card">
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card h-100">
         <div class="card-body">
           <h2 class="card-title">Case Summary Report</h2>
           <form action="{{ url_for('reports.case_summary') }}" method="get">
@@ -51,8 +62,8 @@
       </div>
     </div>
 
-    <div class="col-md-4">
-      <div class="card">
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card h-100">
         <div class="card-body">
           <h2 class="card-title">Charts</h2>
           <form action="{{ url_for('reports.total_collections_chart') }}" method="get">
@@ -62,5 +73,5 @@
       </div>
     </div>
   </div>
+  {% endblock %}
 </div>
-{% endblock %}

@@ -89,7 +89,9 @@ def create_case():
         db.session.add(case)
         db.session.commit()
         # Generate contribution records for all active members
-        generate_contributions_for_case(case)
+        
+        generate_contributions_for_case(case, bereaved_member_id = member_id)
+
         flash('Case created successfully.', 'success')
         #return jsonify({'message': 'Case created successfully'})
         return redirect(url_for('active_cases.view_active_cases'))
@@ -112,9 +114,24 @@ def get_member_id():
     return jsonify({'member_id': member_id})
 
 # Function to generate contribution records for all active members when a new case is created
-def generate_contributions_for_case(case):
+# def generate_contributions_for_case(case):
+#     active_members = Member.query.filter_by(active=True, reg_fee_paid=True, is_deceased=False).all()
+#     for member in active_members:
+#         contribution = Contribution(
+#             member_id=member.id,
+#             case_id=case.id,
+#             paid=False  # Set paid column as False initially
+#         )
+#         db.session.add(contribution)
+#     db.session.commit()
+
+def generate_contributions_for_case(case, bereaved_member_id):
     active_members = Member.query.filter_by(active=True, reg_fee_paid=True, is_deceased=False).all()
     for member in active_members:
+        # Skip generating contributions for the bereaved member
+        if member.id == bereaved_member_id:
+            continue
+
         contribution = Contribution(
             member_id=member.id,
             case_id=case.id,

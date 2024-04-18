@@ -70,29 +70,32 @@ def undo_contribution():
         flash('Contribution not found', 'error')
     return redirect(url_for('contributions.search_members'))
 
-# Route for generating contributions for a case
-@contributions_bp.route('/generate_contributions', methods=['POST'])
-def generate_contributions():
-    case_id = request.form.get('case_id')
-    print("Case ID:", case_id)  # Debug statement
-    case = Case.query.get(case_id)
-    if case:
-        generate_contributions_for_case(case)
-        flash('Contributions generated successfully', 'success')
-    else:
-        flash('Case not found', 'error')
-    return redirect(url_for('contributions.search_members'))
+# # Route for generating contributions for a case
+# @contributions_bp.route('/generate_contributions', methods=['POST'])
+# def generate_contributions():
+#     case_id = request.form.get('case_id')
+#     print("Case ID:", case_id)  # Debug statement
+#     case = Case.query.get(case_id)
+#     if case:
+#         generate_contributions_for_case(case)
+#         flash('Contributions generated successfully', 'success')
+#     else:
+#         flash('Case not found', 'error')
+#     return redirect(url_for('contributions.search_members'))
 
-# Function to generate contributions for a case
-def generate_contributions_for_case(case):
-    active_members = Member.query.filter_by(is_deceased=False).all()
-    for member in active_members:
-        contribution = Contribution.query.filter_by(member_id=member.id, case_id=case.id).first()
-        if not contribution:
-            contribution = Contribution(member_id=member.id, case_id=case.id)
-            db.session.add(contribution)
-    db.session.commit()
-    return
+# # Function to generate contributions for a case
+# def generate_contributions_for_case(case, bereaved_member_id):
+#     active_members = Member.query.filter_by(is_deceased=False).all()
+#     for member in active_members:
+#         # Skip generating contributions for the bereaved member
+#         if member.id == bereaved_member_id:
+#             continue
+        
+#         contribution = Contribution.query.filter_by(member_id=member.id, case_id=case.id).first()
+#         if not contribution:
+#             contribution = Contribution(member_id=member.id, case_id=case.id)
+#             db.session.add(contribution)
+#     db.session.commit()
 
 # Define a route for the summary page
 @contributions_bp.route('/case_summary')

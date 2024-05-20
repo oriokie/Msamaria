@@ -116,13 +116,18 @@ class Member(UserMixin, db.Model):
             #return admin
 
         # If admin doesn't exist, create one
-        admin = Member(name="Admin", id_number="8888888888", phone_number="0700000000", password="admin")
-        admin.make_admin()
-        admin.activate()
-        admin.is_authenticated = True
-        db.session.add(admin)
-        db.session.commit()
-        return admin
+        try:
+            admin = Member(name="Admin", id_number="8888888888", phone_number="0700000000", password="admin")
+            admin.make_admin()
+            admin.activate()
+            admin.is_authenticated = True
+            admin.reg_fee_paid = True
+            db.session.add(admin)
+            db.session.commit()
+            return admin
+        except Exception as e:
+            print("Error creating admin: ", e)
+            return None
     
     def __str__(self):
         return self.name

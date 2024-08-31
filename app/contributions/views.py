@@ -1,15 +1,14 @@
 from flask import render_template, request, redirect, url_for, flash
 from app import db
-from app.members.models import Member
+from app.members.models import Member, Dependent
 from app.contributions.models import Contribution
 from app.cases.models import Case
-from sqlalchemy import and_
+from sqlalchemy import or_, and_
 from flask import Blueprint
 from sqlalchemy.sql import func
 from app.cases.utils import fetch_member_id, get_member_name, get_dependent_name
 from app.finance.models import Expense
 import plotly.graph_objs as go
-
 # Define a Blueprint for the contributions route
 contributions_bp = Blueprint('contributions', __name__, url_prefix='/contributions')
 
@@ -19,24 +18,61 @@ def search_members():
     search_query = request.args.get('search_query')
     if search_query:
         print("Search query:", search_query)  # Debug statement
-        members = Member.query.filter(Member.active == True, Member.name.ilike(f'%{search_query}%')).all()
-        # Load contributions for each member
-        for member in members:
-            member.contributions  # Ensure contributions are loaded
-        print("Members found:", members)  # Debug statement
+        
+        # We'll use this list to store tuples of (member, matched_name)
+        members_with_matches = []
+
+        # Query for members matching the search criteria
+        member_matches = Member.query.filter(
+            and_(
+                Member.active == True,
+                or_(
+                    Member.name.ilike(f'%{search_query}%'),
+                    Member.alias_name_1.ilike(f'%{search_query}%'),
+                    Member.alias_name_2.ilike(f'%{search_query}%'),
+                    Member.phone_number.ilike(f'%{search_query}%')
+                )
+            )
+        ).all()
+
+        # For each matching member, determine which field matched
+        for member in member_matches:
+            if search_query.lower() in member.name.lower():
+                members_with_matches.append((member, member.name))
+            elif member.alias_name_1 and search_query.lower() in member.alias_name_1.lower():
+                members_with_matches.append((member, member.alias_name_1))
+            elif member.alias_name_2 and search_query.lower() in member.alias_name_2.lower():
+                members_with_matches.append((member, member.alias_name_2))
+            elif search_query in member.phone_number:
+                members_with_matches.append((member, member.name))  # Use name for phone number matches
+
+        # Query for dependents matching the search criteria
+        dependent_matches = Dependent.query.filter(
+            Dependent.name.ilike(f'%{search_query}%')
+        ).all()
+
+        # For each matching dependent, add their associated member
+        for dependent in dependent_matches:
+            members_with_matches.append((dependent.member, f"{dependent.name} (Dependent of {dependent.member.name})"))
+
+        # Ensure contributions are loaded for each member
+        for member, _ in members_with_matches:
+            member.contributions
+
+        print("Members found:", members_with_matches)  # Debug statement
     else:
-        members = []
+        members_with_matches = []
 
     active_cases = Case.query.filter_by(closed=False).all()
 
     # Get paid contributions for each member
     contributions_paid = {}
-    for member in members:
+    for member, _ in members_with_matches:
         contributions_paid[member.id] = [contribution.case_id for contribution in member.contributions if contribution.paid]
     print("Contributions paid:", contributions_paid)  # Debug statement
     print("Active cases:", active_cases)  # Debug statement
 
-    return render_template('search_members.html', members=members, active_cases=active_cases, contributions_paid=contributions_paid)
+    return render_template('search_members.html', members_with_matches=members_with_matches, active_cases=active_cases, contributions_paid=contributions_paid)
 
 # Route for marking contributions as paid or unpaid
 @contributions_bp.route('/mark_contribution_paid', methods=['POST'])

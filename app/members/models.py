@@ -17,6 +17,8 @@ class Member(UserMixin, db.Model):
     __tablename__ = 'members'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
+    alias_name_1 = db.Column(db.String(255), nullable=True, default=None)
+    alias_name_2 = db.Column(db.String(255), nullable=True, default=None)
     id_number = db.Column(db.String(12), nullable=False, unique=True)
     phone_number = db.Column(db.String(15), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
@@ -51,6 +53,8 @@ class Member(UserMixin, db.Model):
             'id': self.id,
             'name': self.name,
             'id_number': self.id_number,
+            'alias_name_1': self.alias_name_1,
+             'alias_name_2': self.alias_name_2,
             'phone_number': self.phone_number,
             'reg_fee_paid': self.reg_fee_paid,
             'is_admin': self.is_admin,

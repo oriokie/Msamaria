@@ -28,7 +28,7 @@ class Member(UserMixin, db.Model):
     is_deceased = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=True)
-    dependents = db.relationship('Dependent', backref='member', lazy=True)
+    dependents = db.relationship('Dependent', backref='member', lazy=True, cascade='all, delete-orphan')
     cases = db.relationship('Case', backref='member', lazy=True)
     contributions = db.relationship('Contribution', back_populates='member', lazy=True)
     

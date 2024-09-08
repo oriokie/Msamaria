@@ -3,80 +3,92 @@
   <h1 class="mb-4">Profile</h1>
 
   <!-- Nav tabs -->
-  <ul class="nav nav-tabs">
-    <li class="nav-item">
-      <a
+  <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button
         class="nav-link active"
         id="my-details-tab"
-        data-toggle="tab"
-        href="#my-details"
+        data-bs-toggle="tab"
+        data-bs-target="#my-details"
+        type="button"
         role="tab"
         aria-controls="my-details"
         aria-selected="true"
-        >My Details</a
       >
+        <i class="fas fa-user me-2"></i>My Details
+      </button>
     </li>
     {% if current_user.is_admin %}
-    <li class="nav-item">
-      <a
+    <li class="nav-item" role="presentation">
+      <button
         class="nav-link"
         id="edit-users-tab"
-        data-toggle="tab"
-        href="#edit-users"
+        data-bs-toggle="tab"
+        data-bs-target="#edit-users"
+        type="button"
         role="tab"
         aria-controls="edit-users"
         aria-selected="false"
-        >Edit Users</a
       >
+        <i class="fas fa-users-cog me-2"></i>Edit Users
+      </button>
     </li>
-    <li class="nav-item">
-      <a
+    <li class="nav-item" role="presentation">
+      <button
         class="nav-link"
         id="defaulters-tab"
-        data-toggle="tab"
-        href="#defaulters"
+        data-bs-toggle="tab"
+        data-bs-target="#defaulters"
+        type="button"
         role="tab"
         aria-controls="defaulters"
         aria-selected="false"
-        >Defaulters</a
       >
+        <i class="fas fa-exclamation-triangle me-2"></i>Defaulters
+      </button>
     </li>
-    <li class="nav-item">
-      <a
+    <li class="nav-item" role="presentation">
+      <button
         class="nav-link"
         id="registration-tab"
-        data-toggle="tab"
-        href="#registration"
+        data-bs-toggle="tab"
+        data-bs-target="#registration"
+        type="button"
         role="tab"
         aria-controls="registration"
         aria-selected="false"
-        >Registration</a
       >
+        <i class="fas fa-user-plus me-2"></i>Registration
+      </button>
     </li>
-    <li class="nav-item">
-      <a
+    <li class="nav-item" role="presentation">
+      <button
         class="nav-link"
         id="upload-csv-tab"
-        data-toggle="tab"
-        href="#upload-csv"
+        data-bs-toggle="tab"
+        data-bs-target="#upload-csv"
+        type="button"
         role="tab"
         aria-controls="upload-csv"
         aria-selected="false"
-        >Upload CSV</a
       >
+        <i class="fas fa-file-upload me-2"></i>Upload CSV
+      </button>
     </li>
     {% endif %} {% if not current_user.is_admin %}
-    <li class="nav-item">
-      <a
+    <li class="nav-item" role="presentation">
+      <button
         class="nav-link"
         id="dependents-tab"
-        data-toggle="tab"
-        href="#dependents"
+        data-bs-toggle="tab"
+        data-bs-target="#dependents"
+        type="button"
         role="tab"
         aria-controls="dependents"
         aria-selected="false"
-        >Dependents</a
       >
+        <i class="fas fa-users me-2"></i>Dependents
+      </button>
     </li>
     {% endif %}
   </ul>
@@ -85,39 +97,76 @@
   <div class="tab-content mt-4">
     <!-- My Details tab -->
     <div class="tab-pane fade show active" id="my-details" role="tabpanel" aria-labelledby="my-details-tab">
-      <div class="card">
+      <div class="card shadow-sm">
         <div class="card-body">
-          <h5 class="card-title">My Details</h5>
-          <p class="card-text"><strong>Name:</strong> {{ current_user.name }}</p>
-          <p class="card-text"><strong>ID Number:</strong> {{ current_user.id_number }}</p>
-          <p class="card-text"><strong>Phone Number:</strong> {{ current_user.phone_number }}</p>
-          <p cass="card-text"><strong>Recent 3 Cases Defaulted: </strong> {{ Defaulted_cases }}</p>
-          <p cass="card-text"><strong>All Cases Defaulted :</strong> {{ no_of_defaulted_cases }}</p>
-          <p cass="card-text"><strong>Total Contribution Amount:</strong> {{ total_case_contributions }}</p>
+          <h5 class="card-title mb-4">My Details</h5>
+          <div class="row">
+            <div class="col-md-6">
+              <p>
+                <strong><i class="fas fa-user me-2"></i>Name:</strong> {{ current_user.name }}
+              </p>
+              <p>
+                <strong><i class="fas fa-id-card me-2"></i>ID Number:</strong> {{ current_user.id_number }}
+              </p>
+              <p>
+                <strong><i class="fas fa-phone me-2"></i>Phone Number:</strong> {{ current_user.phone_number }}
+              </p>
+            </div>
+            <div class="col-md-6">
+              <p>
+                <strong><i class="fas fa-exclamation-circle me-2"></i>Recent 3 Cases Defaulted:</strong> {{ Defaulted_cases }}
+              </p>
+              <p>
+                <strong><i class="fas fa-times-circle me-2"></i>All Cases Defaulted:</strong> {{ no_of_defaulted_cases }}
+              </p>
+              <p>
+                <strong><i class="fas fa-money-bill-wave me-2"></i>Total Contribution Amount:</strong> {{ total_case_contributions
+                }}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="alert {% if current_user.active %}alert-success{% else %}alert-danger{% endif %}" role="alert">
-        {% if current_user.active %} Active {% else %} Inactive {% endif %} {% if current_user.reg_fee_paid %} and Registration
-        Fee Paid {% else %} but Registration Fee Not Paid {% endif %}
+      <div class="alert mt-4 {% if current_user.active %}alert-success{% else %}alert-danger{% endif %}" role="alert">
+        <i class="fas {% if current_user.active %}fa-check-circle{% else %}fa-times-circle{% endif %} me-2"></i>
+        {% if current_user.active %}Active{% else %}Inactive{% endif %} {% if current_user.reg_fee_paid %} and Registration Fee
+        Paid{% else %} but Registration Fee Not Paid{% endif %}
       </div>
     </div>
 
     <!-- Edit Users tab -->
     {% if current_user.is_admin %}
     <div class="tab-pane fade" id="edit-users" role="tabpanel" aria-labelledby="edit-users-tab">
-      <div class="card mt-4">
+      <div class="card shadow-sm mt-4">
         <div class="card-body">
-          <h5 class="card-title">All Members</h5>
-          <ul class="list-group">
-            {% for user in users %}
-            <li class="list-group-item">
-              <strong>Name:</strong> {{ user.name }} <br />
-              <strong>ID Number:</strong> {{ user.id_number }} <br />
-              <strong>Phone Number:</strong> {{ user.phone_number }} <br />
-              <strong>Admin:</strong> {% if user.is_admin %}Yes{% else %}No{% endif %} <br />
-            </li>
-            {% endfor %}
-          </ul>
+          <h5 class="card-title mb-4">All Members</h5>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>ID Number</th>
+                  <th>Phone Number</th>
+                  <th>Admin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for user in users %}
+                <tr>
+                  <td>{{ user.name }}</td>
+                  <td>{{ user.id_number }}</td>
+                  <td>{{ user.phone_number }}</td>
+                  <td>
+                    {% if user.is_admin %}<i class="fas fa-check text-success"></i>{% else %}<i
+                      class="fas fa-times text-danger"
+                    ></i
+                    >{% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -126,45 +175,53 @@
     <!-- Dependents Tab -->
     {% if not current_user.is_admin %}
     <div class="tab-pane fade" id="dependents" role="tabpanel" aria-labelledby="dependents-tab">
-      <h2>Dependents</h2>
-      <form id="addDependentForm">
-        <div class="form-group">
-          <label for="dependentName">Name</label>
-          <input type="text" class="form-control" id="dependentName" name="name" required />
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title mb-4">Add Dependent</h5>
+          <form id="addDependentForm">
+            <div class="mb-3">
+              <label for="dependentName" class="form-label">Name</label>
+              <input type="text" class="form-control" id="dependentName" name="name" required />
+            </div>
+            <div class="mb-3">
+              <label for="dependentPhoneNumber" class="form-label">Phone Number</label>
+              <input type="text" class="form-control" id="dependentPhoneNumber" name="phone_number" />
+            </div>
+            <div class="mb-3">
+              <label for="dependentRelationship" class="form-label">Relationship</label>
+              <select class="form-select" id="dependentRelationship" name="relationship">
+                <option value="parent">Parent</option>
+                <option value="parent-in-law">Parent-in-law</option>
+                <option value="daughter">Daughter</option>
+                <option value="son">Son</option>
+                <option value="spouse">Spouse</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Dependent</button>
+          </form>
         </div>
-        <div class="form-group">
-          <label for="dependentPhoneNumber">Phone Number</label>
-          <input type="text" class="form-control" id="dependentPhoneNumber" name="phone_number" />
-        </div>
-        <div class="form-group">
-          <label for="dependentRelationship">Relationship</label>
-          <select class="form-control" id="dependentRelationship" name="relationship">
-            <option value="parent">Parent</option>
-            <option value="parent-in-law">Parent-in-law</option>
-            <option value="daughter">Daughter</option>
-            <option value="son">Son</option>
-            <option value="spouse">Spouse</option>
-          </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Add Dependent</button>
-      </form>
+      </div>
 
-      <!-- List of Dependents -->
-      <div>
-        <h2>Dependents</h2>
-        <table class="table table-striped table-bordered">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Phone Number</th>
-              <th>Relationship</th>
-              <th>Date Added</th>
-            </tr>
-          </thead>
-          <tbody id="dependentsTableBody">
-            <!-- Dependents will be dynamically added here -->
-          </tbody>
-        </table>
+      <div class="card shadow-sm mt-4">
+        <div class="card-body">
+          <h5 class="card-title mb-4">Dependents</h5>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Phone Number</th>
+                  <th>Relationship</th>
+                  <th>Date Added</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="dependentsTableBody">
+                <!-- Dependents will be dynamically added here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
     {% endif %}
@@ -172,92 +229,131 @@
     <!-- Upload CSV tab -->
     {% if current_user.is_admin %}
     <div class="tab-pane fade" id="upload-csv" role="tabpanel" aria-labelledby="upload-csv-tab">
-      <div class="container mt-4">
-        <h2>Bulk Member Registration CSV</h2>
-        <form action="{{ url_for('csv.upload_csv') }}" method="post" enctype="multipart/form-data">
-          <div class="form-group">
-            <label for="csvFile">Select CSV File</label>
-            <input type="file" class="form-control-file" id="csvFile" name="file" accept=".csv" required />
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title mb-4">Bulk Member Registration CSV</h5>
+              <form action="{{ url_for('csv.upload_csv') }}" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                  <label for="csvFile" class="form-label">Select CSV File</label>
+                  <input type="file" class="form-control" id="csvFile" name="file" accept=".csv" required />
+                </div>
+                <button type="submit" class="btn btn-primary">Upload to Register</button>
+              </form>
+            </div>
           </div>
-          <button type="submit" class="btn btn-primary">Upload to Register</button>
-        </form>
-      </div>
-      <div class="container mt-4">
-        <h2>Upload Contributions CSV</h2>
-        <form action="{{ url_for('csv.upload_contributions') }}" method="post" enctype="multipart/form-data">
-          <div class="form-group">
-            <label for="csvFile">Select CSV File</label>
-            <input type="file" class="form-control-file" id="csvFile" name="file" accept=".csv" required />
+        </div>
+        <div class="col-md-6">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title mb-4">Upload Contributions CSV</h5>
+              <form action="{{ url_for('csv.upload_contributions') }}" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                  <label for="csvFile" class="form-label">Select CSV File</label>
+                  <input type="file" class="form-control" id="csvFile" name="file" accept=".csv" required />
+                </div>
+                <button type="submit" class="btn btn-primary">Upload to Mark as Paid</button>
+              </form>
+            </div>
           </div>
-          <button type="submit" class="btn btn-primary">Upload to Mark as Paid</button>
-        </form>
+        </div>
       </div>
     </div>
 
-      <!-- Defaulters tab -->
-      <div class="tab-pane fade" id="defaulters" role="tabpanel" aria-labelledby="defaulters-tab">
-        <h2>Defaulters</h2>
-        <table class="table table-striped table-bordered">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>ID Number</th>
-              <th>Phone Number</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for defaulter in defaulters %}
-            <tr>
-              <td>{{ defaulter.name }}</td>
-              <td>{{ defaulter.id_number }}</td>
-              <td>{{ defaulter.phone_number }}</td>
-              <td>
-                <form action="{{ url_for('routes.deactivate_user', user_id=defaulter.id) }}" method="post">
-                  <button type="submit" class="btn btn-danger">Deregister</button>
-                </form>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+    <!-- Defaulters tab -->
+    <div class="tab-pane fade" id="defaulters" role="tabpanel" aria-labelledby="defaulters-tab">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title mb-4">Defaulters</h5>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>ID Number</th>
+                  <th>Phone Number</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for defaulter in defaulters %}
+                <tr>
+                  <td>{{ defaulter.name }}</td>
+                  <td>{{ defaulter.id_number }}</td>
+                  <td>{{ defaulter.phone_number }}</td>
+                  <td>
+                    <form action="{{ url_for('routes.deactivate_user', user_id=defaulter.id) }}" method="post">
+                      <button type="submit" class="btn btn-danger btn-sm">Deregister</button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-
-      <!-- Registration tab -->
-      <div class="tab-pane fade" id="registration" role="tabpanel" aria-labelledby="registration-tab">
-        <h2>Pending Registrations</h2>
-        <table class="table table-striped table-bordered">
-          <thead>
-            <tr>
-              <th>Member ID</th>
-              <th>Name</th>
-              <th>ID Number</th>
-              <th>Phone Number</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for member in unpaid_members %}
-            <tr>
-              <td>{{ member.id }}</td>
-              <td>{{ member.name }}</td>
-              <td>{{ member.id_number }}</td>
-              <td>{{ member.phone_number }}</td>
-              <td>
-                <form action="{{ url_for('routes.register_fee', member_id=member.id) }}" method="post">
-                  <button type="submit" class="btn btn-primary">Register</button>
-                </form>
-                <form action="{{ url_for('registration.decline_registration', member_id=member.id) }}" method="post" style="display: inline;">
-                  <button type="submit" class="btn btn-danger">Decline</button>
-                </form>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-
-      {% endif %}
     </div>
+
+    <!-- Registration tab -->
+    <div class="tab-pane fade" id="registration" role="tabpanel" aria-labelledby="registration-tab">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title mb-4">Pending Registrations</h5>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Member ID</th>
+                  <th>Name</th>
+                  <th>ID Number</th>
+                  <th>Phone Number</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for member in unpaid_members %}
+                <tr>
+                  <td>{{ member.id }}</td>
+                  <td>{{ member.name }}</td>
+                  <td>{{ member.id_number }}</td>
+                  <td>{{ member.phone_number }}</td>
+                  <td>
+                    <form action="{{ url_for('routes.register_fee', member_id=member.id) }}" method="post" class="d-inline">
+                      <button type="submit" class="btn btn-primary btn-sm">Register</button>
+                    </form>
+                    <form
+                      action="{{ url_for('registration.decline_registration', member_id=member.id) }}"
+                      method="post"
+                      class="d-inline"
+                    >
+                      <button type="submit" class="btn btn-danger btn-sm">Decline</button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
   </div>
 </div>
-  {% endblock %}
+{% endblock %} {% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var triggerTabList = [].slice.call(document.querySelectorAll("#profileTabs button"));
+    triggerTabList.forEach(function (triggerEl) {
+      var tabTrigger = new bootstrap.Tab(triggerEl);
 
+      triggerEl.addEventListener("click", function (event) {
+        event.preventDefault();
+        tabTrigger.show();
+      });
+    });
+  });
+</script>
+{% endblock %}

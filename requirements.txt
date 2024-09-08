@@ -1,1 +1,6 @@
 Flask
+flask_sqlalchemy
+flask_migrate
+flask_login
+plotly
+flask_wtf

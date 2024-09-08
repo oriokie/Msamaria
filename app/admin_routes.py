@@ -1,110 +1,149 @@
-from flask import Blueprint, render_template, request, jsonify, flash
+
+from flask import Blueprint, render_template, request, jsonify, abort
+from flask_login import current_user, login_required
+from werkzeug.security import generate_password_hash
+from sqlalchemy.exc import IntegrityError
 from app.members.models import Member
 from app.dependents.models import Dependent
 from app import db
-from flask_login import current_user
-from flask_login import login_required
-
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
-
 
 @admin_bp.route('/')
 @login_required
 def admin_dashboard():
-    if current_user.is_authenticated and current_user.is_admin:
-        return render_template('admin.html')
-    else:
-        return render_template('403.html'), 403
+    if not current_user.is_admin:
+        abort(403)
+    return render_template('admin.html')
 
-# Route for searching members by name
 @admin_bp.route('/search_member', methods=['POST'])
 @login_required
 def search_member():
-    search_query = request.form.get('search_query')
-    # Perform a search query to find the member by name
-    members = Member.query.filter(Member.name.ilike(f'%{search_query}%')).all()
-    if members:
-        # Serialize the list of members
-        serialized_members = [member.serialize(include_dependents=True) for member in members]
-        return jsonify(serialized_members)
-    else:
-        return jsonify([])  # Return an empty list if no members are found
+    if not current_user.is_admin:
+        abort(403)
+    search_query = request.form.get('search_query', '')
+    members = Member.query.filter(
+        (Member.name.ilike(f'%{search_query}%')) |
+        (Member.alias_name_1.ilike(f'%{search_query}%')) |
+        (Member.alias_name_2.ilike(f'%{search_query}%')) |
+        (Member.phone_number.ilike(f'%{search_query}%'))
+    ).all()
+    return jsonify([member.serialize(include_dependents=True) for member in members])
 
-# Route for getting member details by ID
 @admin_bp.route('/member_details/<int:member_id>', methods=['GET'])
 @login_required
 def get_member_details(member_id):
-    # Retrieve member by ID
-    member = Member.query.get(member_id)
-    if member:
-        # Serialize member details
-        serialized_member = member.serialize(include_dependents=True)
-        return jsonify(serialized_member)
-    else:
-        return jsonify({'error': 'Member not found'}), 404
-# Update Member Route
-@admin_bp.route('/update_member/<int:member_id>', methods=['POST'])
-@login_required
+    if not current_user.is_admin:
+        abort(403)
+    member = Member.query.get_or_404(member_id)
+    return jsonify(member.serialize(include_dependents=True))
+
+def get_dependent_by_id(dependent_id):
+    return Dependent.query.filter_by(id=dependent_id).first()
+
+@admin_bp.route('/update_member/<int:member_id>', methods=['PUT'])
 def update_member(member_id):
+    data = request.json
     member = Member.query.get(member_id)
-    if member:
-        # Extract updated data from the request
-        data = request.json
-        # Update member fields
-        member.name = data.get('name')
-        member.id_number = data.get('id_number')
-        member.phone_number = data.get('phone_number')
-        member.reg_fee_paid = data.get('reg_fee_paid')
-        member.is_admin = data.get('is_admin')
-        member.active = data.get('active')
-        member.is_deceased = data.get('is_deceased')
-        # Update dependents (if applicable)
-        for dependent_data in data.get('dependents', []):
-            dependent_id = dependent_data.get('id')
-            dependent = Dependent.query.get(dependent_id)
-            if dependent:
-                dependent.name = dependent_data.get('name')
-                dependent.relationship = dependent_data.get('relationship')
-        db.session.commit()
-        return jsonify({'message': 'Member details and dependents updated successfully'})
-    else:
-        return jsonify({'error': 'Member not found'}), 404
+
+    if not member:
+        return jsonify({"error": "Member not found"}), 404
+
+    # Update member fields
+    member.name = data.get('name')
+    member.id_number = data.get('id_number')
+    member.phone_number = data.get('phone_number')
+    member.alias_name_1 = data.get('alias_name_1')
+    member.alias_name_2 = data.get('alias_name_2')
+    member.reg_fee_paid = data.get('reg_fee_paid', False)
+    member.is_admin = data.get('is_admin', False)
+    member.active = data.get('active', True)
+    member.is_deceased = data.get('is_deceased', False)
     
-# Route for updating dependents
-@admin_bp.route('/update_dependents/<int:member_id>', methods=['POST'])
-@login_required
-def update_dependents(member_id):
-    member = Member.query.get(member_id)
-    if member:
-        # Extract updated dependents data from the request
-        data = request.json
-        updated_dependents = data.get('dependents', [])
-        for dependent_data in updated_dependents:
-            dependent_id = dependent_data.get('id')
-            dependent = Dependent.query.get(dependent_id)
-            if dependent:
-                dependent.name = dependent_data.get('name')
-                dependent.relationship = dependent_data.get('relationship')
+    # Handle dependents
+    existing_dependent_ids = [d['id'] for d in data.get('dependents', []) if d.get('id')]
+    current_dependents = {dependent.id: dependent for dependent in member.dependents}
+    
+    # Update existing dependents or delete those that are not in the list
+    for dependent_id, dependent in current_dependents.items():
+        if dependent_id not in existing_dependent_ids:
+            dependent.delete()  # Delete dependents that are not in the updated list
+        else:
+            for d in data['dependents']:
+                dependent = get_dependent_by_id(d['id'])  # Assuming you have a function to get the dependent by id
+                if dependent:
+                    dependent.update(
+                        name=d.get('name'),  # Using .get() ensures it won't raise KeyError if the field is missing
+                        phone_number=d.get('phone_number')  # You can set a default value if necessary
+        )
+
+
+    # Add new dependents
+    for dependent_data in data.get('dependents', []):
+        if not dependent_data.get('id'):  # New dependent
+            new_dependent = Dependent(
+                name=dependent_data['name'],
+                member_id=member.id,
+                relationship=dependent_data.get('relationship'),
+                phone_number=dependent_data.get('phone_number')
+            )
+            db.session.add(new_dependent)
+
+    try:
         db.session.commit()
-        return jsonify({'message': 'Dependents updated successfully'})
-    else:
-        return jsonify({'error': 'Member not found'}), 404
+        return jsonify({"message": "Member updated successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
-
-# Route for deleting a dependent
 @admin_bp.route('/delete_dependent/<int:dependent_id>', methods=['DELETE'])
 @login_required
 def delete_dependent(dependent_id):
-    # Retrieve dependent by ID
-    dependent = Dependent.query.get(dependent_id)
-    if dependent:
-        # Delete dependent from the database
+    try:
+        dependent = Dependent.query.get(dependent_id)
+        if not dependent:
+            return jsonify({"error": "Dependent not found"}), 404
+        
         db.session.delete(dependent)
-        # Commit changes to the database
         db.session.commit()
-        flash('Dependent deleted successfully', 'success')
-        return jsonify({'success': 'Dependent deleted successfully'})
-    else:
-        flash('Dependent not found', 'error')
-        return jsonify({'error': 'Dependent not found'}), 404
+        return jsonify({"success": True, "message": "Dependent deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@admin_bp.route('/register_member', methods=['POST'])
+@login_required
+def register_member():
+    if not current_user.is_admin:
+        abort(403)
+    data = request.json
+    new_member = Member(
+        name=data['name'],
+        id_number=data['id_number'],
+        phone_number=data['phone_number'],
+        alias_name_1=data.get('alias_name_1'),
+        alias_name_2=data.get('alias_name_2'),
+        reg_fee_paid=data.get('reg_fee_paid', False),
+        is_admin=data.get('is_admin', False),
+        active=data.get('active', True),
+        is_deceased=data.get('is_deceased', False)
+    )
+    new_member.set_password(data['password'])
+    
+    try:
+        db.session.add(new_member)
+        db.session.commit()
+        return jsonify({'message': 'New member registered successfully', 'member_id': new_member.id})
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({'error': 'Registration failed. The ID number may already be in use.'}), 400
+
+@admin_bp.route('/delete_member/<int:member_id>', methods=['DELETE'])
+@login_required
+def delete_member(member_id):
+    if not current_user.is_admin:
+        abort(403)
+    member = Member.query.get_or_404(member_id)
+    db.session.delete(member)
+    db.session.commit()
+    return jsonify({'message': 'Member deleted successfully'})

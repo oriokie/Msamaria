@@ -1,51 +1,55 @@
-# Import necessary modules
 from flask import render_template, Blueprint, request, jsonify
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField
+from wtforms.validators import DataRequired, Length, EqualTo
 from app import db
 from app.members.models import Member
 from app.dependents.models import Dependent
 
-# Create a Blueprint for the registration routes
 regnew_bp = Blueprint('regnew', __name__)
 
-# Route for rendering the registration form
-@regnew_bp.route('/regnew', methods=['GET'])
-def render_registration_form():
-    return render_template('registration_form.html')
+class MemberForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    id_number = StringField('ID Number', validators=[DataRequired(), Length(min=12, max=12)])
+    phone_number = StringField('Phone Number', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
 
-# Route for processing member registration and dependent addition
-@regnew_bp.route('/regnew', methods=['POST'])
+@regnew_bp.route('/regnew', methods=['GET', 'POST'])
 def register_and_add_dependents():
-    try:
-        # Extract member data from the request form
-        member_name = request.form.get('name')
-        member_id_number = request.form.get('id_number')
-        member_phone_number = request.form.get('phone_number')
-        password = member_phone_number
+    form = MemberForm()
+    if request.method == 'POST':
+        if request.is_json:
+            data = request.get_json()
+            form = MemberForm(data=data)
+            if form.validate():
+                try:
+                    new_member = Member(
+                        name=form.name.data,
+                        id_number=form.id_number.data,
+                        phone_number=form.phone_number.data,
+                        password=form.password.data
+                    )
+                    db.session.add(new_member)
+                    db.session.commit()  # Commit the member first
 
-        # Create a new member object
-        new_member = Member(name=member_name, id_number=member_id_number, phone_number=member_phone_number, password=password)
-        
-        # Add the new member to the database
-        db.session.add(new_member)
-        db.session.commit()
-
-        # Extract dependent data from the request form
-        dependents = request.form.getlist('dependent_name')
-        phone_numbers = request.form.getlist('dependent_phone_number')
-        relationships = request.form.getlist('relationship')
-
-        # Check if dependent data is provided
-        if dependents and dependents[0] != '' and dependents[0] != ' ' and dependents[0] != None:
-            # Create and add dependents associated with the member
-            for name, phone_number, relationship in zip(dependents, phone_numbers, relationships):
-                new_dependent = Dependent(name=name, phone_number=phone_number, relationship=relationship, member_id=new_member.id)
-                db.session.add(new_dependent)
-                db.session.commit()
-    
-        # Return success message
-        return jsonify({'message': 'Member registered and dependents added successfully'}), 200
-
-    except Exception as e:
-        # Rollback changes and return error message
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+                    dependents_data = data.get('dependents', [])
+                    for dependent_data in dependents_data:
+                        new_dependent = Dependent(
+                            name=dependent_data['name'],
+                            phone_number=dependent_data['phone_number'],
+                            relationship=dependent_data['relationship'],
+                            member_id=new_member.id
+                        )
+                        db.session.add(new_dependent)
+                    
+                    db.session.commit()  # Commit the dependents
+                    return jsonify({'success': True, 'message': 'Member and dependents registered successfully'})
+                except Exception as e:
+                    db.session.rollback()
+                    return jsonify({'success': False, 'message': str(e)})
+            else:
+                return jsonify({'success': False, 'errors': form.errors})
+        else:
+            return jsonify({'success': False, 'message': 'Invalid content type, expected JSON'}), 415
+    return render_template('registration_form.html', form=form)

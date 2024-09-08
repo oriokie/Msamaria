@@ -1,93 +1,95 @@
-// Wait for the document to be fully loaded
 $(document).ready(function () {
   // Function to display dependents in a table
   function displayDependents(dependentsData) {
-    // Clear the existing dependents table
-    $("#dependentsTableBody").empty();
+    const $tableBody = $("#dependentsTableBody");
+    $tableBody.empty();
 
-    // Check if there are dependents to display
     if (dependentsData.length > 0) {
-      // Iterate over the array of dependents
       dependentsData.forEach(function (dependent) {
-        // Create a new table row
-        var row = $("<tr>");
-
-        // Create table data cells for each dependent's information
-        var nameCell = $("<td>").text(dependent.name);
-        var phoneNumberCell = $("<td>").text(dependent.phone_number);
-        var relationshipCell = $("<td>").text(dependent.relationship);
-        var dateCell = $("<td>").text(dependent.created_at);
-
-        // Append the table data cells to the table row
-        row.append(nameCell, phoneNumberCell, relationshipCell, dateCell);
-
-        // Append the table row to the dependents table body
-        $("#dependentsTableBody").append(row);
+        const row = $("<tr>").append(
+          $("<td>").text(dependent.name),
+          $("<td>").text(dependent.phone_number || "N/A"),
+          $("<td>").text(dependent.relationship || "N/A"),
+          $("<td>").text(new Date(dependent.created_at).toLocaleDateString()),
+          $("<td>").text(dependent.is_deceased ? "Deceased" : "Alive")
+        );
+        $tableBody.append(row);
       });
     } else {
-      // If there are no dependents, display a message indicating so
-      $("#dependentsTableBody").append($("<tr>").append($("<td colspan='3'>").text("No dependents added yet.")));
+      $tableBody.append($("<tr>").append($("<td colspan='5'>").text("No dependents added yet.")));
     }
   }
 
   // Function to handle form submission for adding a dependent
   $("#addDependentForm").submit(function (event) {
-    // Prevent the default form submission
     event.preventDefault();
 
-    // Get the form data
-    var formData = {
-      name: $("#dependentName").val(),
-      phone_number: $("#dependentPhoneNumber").val(),
+    const formData = {
+      name: $("#dependentName").val().trim(),
+      phone_number: $("#dependentPhoneNumber").val().trim(),
       relationship: $("#dependentRelationship").val(),
-      date: $("#dependentDate").val(),
     };
 
-    // Make an AJAX POST request to add the dependent
+    // Basic form validation
+    if (!formData.name) {
+      showMessage("Please enter a name for the dependent.", "error");
+      return;
+    }
+
     $.ajax({
       type: "POST",
       url: "/dependents/add",
       data: JSON.stringify(formData),
       contentType: "application/json",
       success: function (data) {
-        // Handle success by adding the new dependent to the list
-        console.log(data);
-
-        fetchAndDisplayDependents();
-        //displayDependents([data]);
-        $("#successMessage").text("Dependent added successfully!");
-        // Optionally display a success message
-        $("#successMessage").text("Dependent added successfully!");
+        console.log("Dependents data received:", data);
+        displayDependents(data);
+        $("#addDependentForm")[0].reset();
+        showMessage("Dependent added successfully!", "success");
       },
       error: function (xhr, status, error) {
-        // Handle error by displaying an error message
-        console.error(error);
-        $("#errorMessage").text("Failed to add dependent: " + error);
+        console.error("Error adding dependent:", error);
+        console.error("Server response:", xhr.responseText);
+        showMessage("Failed to add dependent: " + (xhr.responseJSON?.error || error), "error");
       },
     });
   });
 
-  // Function to fetch and display the dependents when the page loads
+  // Function to fetch and display the dependents
   function fetchAndDisplayDependents() {
-    // Make an AJAX GET request to fetch dependents data
     $.ajax({
       type: "GET",
-      url: "/dependents",
+      url: "/dependents/",
       success: function (data) {
-        // Display the fetched dependents
+        console.log("Dependents data received:", data);
         displayDependents(data);
       },
       error: function (xhr, status, error) {
-        // Handle error by displaying an error message
-        console.error(error);
-        $("#errorMessage").text("Failed to fetch dependents: " + error);
+        console.error("Error fetching dependents:", error);
+        console.error("Server response:", xhr.responseText);
+        showMessage("Failed to fetch dependents: " + (xhr.responseJSON?.error || error), "error");
       },
     });
   }
 
+  // Function to show messages (success or error)
+  function showMessage(message, type) {
+    const $messageElement = type === "success" ? $("#successMessage") : $("#errorMessage");
+    $messageElement.text(message).show().delay(5000).fadeOut();
+  }
+
+  // Initialize dependents tab
+  function initDependentsTab() {
+    const $dependentsTab = $("#dependents-tab");
+    if ($dependentsTab.length) {
+      $dependentsTab.on("shown.bs.tab", fetchAndDisplayDependents);
+    }
+  }
+
+  // Check if we're on the profile page and initialize
   if (window.location.pathname === "/profile") {
+    initDependentsTab();
+    // Fetch dependents immediately if we're on the profile page
     fetchAndDisplayDependents();
   }
-  // Call the fetchAndDisplayDependents function when the page loads
-  //fetchAndDisplayDependents();
 });

@@ -1,39 +1,94 @@
 {% extends 'base.html' %} {% block content %}
-<div class="container">
-  <h2>Contributions</h2>
-  {% if enumerated_member_names %}
-  <p>Contributing Members: for case: {{ case_id }}</p>
-  <ol style="list-style-type: none">
-    {% for index, member_name in enumerated_member_names %}
-    <li><code>{{ index }}. {{ member_name }}</code></li>
-    {% endfor %}
-  </ol>
-  {% else %}
-  <p>No contributing members found for this case.</p>
-  {% endif %}
+<div class="container mt-5">
+  <h1 class="mb-4">Case {{ case.id }} Details</h1>
 
-  <h2>Case Summary</h2>
-  <table class="table table-striped table-bordered">
-    <thead>
-      <tr>
-        <th>Case ID</th>
-        <th>Case Amount</th>
-        <th>Deceased Person</th>
-        <th>Total Contributed Amount</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>{{ case.id }}</td>
-        <td>${{ case.case_amount }}</td>
-        <td>{{ deceased_person }}</td>
-        <td>${{ total_amount_contributed }}</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      <h2 class="mb-0">Case Summary</h2>
+    </div>
+    <div class="card-body">
+      <table class="table table-striped table-bordered">
+        <thead class="thead-dark">
+          <tr>
+            <th>Case ID</th>
+            <th>Case Amount</th>
+            <th>Deceased Person</th>
+            <th>Total Contributed Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ case.id }}</td>
+            <td>${{ case.case_amount }}</td>
+            <td>{{ deceased_person }}</td>
+            <td>${{ total_amount_contributed }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+          <h2 class="mb-0">Contributing Members</h2>
+        </div>
+        <div class="card-body">
+          {% if enumerated_member_names %}
+          <ol class="list-group list-group-numbered">
+            {% for index, member_name in enumerated_member_names %}
+            <li class="list-group-item">{{ member_name }}</li>
+            {% endfor %}
+          </ol>
+          {% else %}
+          <p class="text-muted">No contributing members found for this case.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+          <h2 class="mb-0">Non-Contributing Members</h2>
+        </div>
+        <div class="card-body">
+          {% if not_paid_names %}
+          <ol class="list-group list-group-numbered">
+            {% for index, member_name in not_paid_names %}
+            <li class="list-group-item">{{ member_name }}</li>
+            {% endfor %}
+          </ol>
+          {% else %}
+          <p class="text-muted">No defaulting members found for this case.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header bg-info text-white">
+      <h2 class="mb-0">Distribution of Contributions</h2>
+    </div>
+    <div class="card-body">
+      <div id="pie-chart"></div>
+    </div>
+  </div>
+
+  <div class="text-center mb-5">
+    <a
+      href="{{ url_for('contributions.case_details', case_id=case.id, format='pdf') }}"
+      class="btn btn-primary btn-lg"
+      target="_blank"
+    >
+      <i class="fas fa-file-pdf mr-2"></i> Download as PDF
+    </a>
+  </div>
 </div>
 
-<div id="pie-chart"></div>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script>
   // Load pie chart JSON data
   var pieChartJson = {{ pie_chart_json | safe }};
@@ -41,18 +96,4 @@
   // Render pie chart
   Plotly.newPlot('pie-chart', pieChartJson.data, pieChartJson.layout);
 </script>
-
-<div>
-  <h2>Members Not Contributed</h2>
-  {% if not_paid_names %}
-  <p>The following members have not contributed: for case: {{ case_id }}</p>
-  <ol style="list-style-type: none">
-    {% for index, member_name in not_paid_names %}
-    <li><code>{{ index }}. {{ member_name }}</code></li>
-    {% endfor %}
-  </ol>
-  {% else %}
-  <p>No defaulting members found for this case.</p>
-  {% endif %}
-</div>
 {% endblock %}

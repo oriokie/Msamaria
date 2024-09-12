@@ -246,12 +246,13 @@ def generate_all_contributions():
     csvwriter = csv.writer(csv_data)
 
     # Header row containing case IDs
-    header_row = ['Member Name'] + [f'Case {case.id}' for case in cases]
+    header_row = ['Member Name'] + ["ID"] + [f'Case {case.id}' for case in cases]
     csvwriter.writerow(header_row)
 
     # Populate matrix with contribution amounts
     for member in members:
         row = [member.name]  # Start the row with member's name
+        row.append(member.id)
         for case in cases:
             contribution = Contribution.query.filter_by(member_id=member.id, case_id=case.id).first()
             if contribution:

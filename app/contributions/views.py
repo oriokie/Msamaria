@@ -9,6 +9,16 @@ from sqlalchemy.sql import func
 from app.cases.utils import fetch_member_id, get_member_name, get_dependent_name
 from app.finance.models import Expense
 import plotly.graph_objs as go
+import pdfkit
+from flask import make_response, send_file
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from io import BytesIO
+
+
+
 # Define a Blueprint for the contributions route
 contributions_bp = Blueprint('contributions', __name__, url_prefix='/contributions')
 
@@ -174,11 +184,9 @@ def case_summary():
     # Pass the case summaries to the template for rendering
     return render_template('case_summary.html', case_summaries=case_summaries)
 
-
 @contributions_bp.route('/case_details/<int:case_id>')
 def case_details(case_id):
     # Query the database to get the case with the specified ID
-    cases = Case.query.all()
     case = Case.query.get_or_404(case_id)
     
     if case.dependent_id:
@@ -201,7 +209,7 @@ def case_details(case_id):
         elif member and not contribution.paid:
             members_not_paid.append(member.name)
     
-        # Pre-enumerate the member names list
+    # Pre-enumerate the member names list
     sorted_member_names = sorted(member_names)
     sorted_members_not_paid = sorted(members_not_paid)
     enumerated_member_names = list(enumerate(sorted_member_names, start=1))
@@ -209,8 +217,6 @@ def case_details(case_id):
 
     number_of_contributions = len(enumerated_member_names)
     total_amount_contributed = number_of_contributions * case.case_amount
-
-    # Pass the case and contribution information to the template for rendering
 
     # ___________________________PIE CHART______________________________________________________
 
@@ -241,11 +247,74 @@ def case_details(case_id):
     # Convert pie chart figure to JSON for embedding in HTML
     pie_chart_json = pie_fig.to_json()
 
-    return render_template('case_details.html', case=case,
-                           enumerated_member_names=enumerated_member_names,
-                            not_paid_names=not_paid_names,
-                           deceased_person=deceased_member,
-                           total_amount_contributed=total_amount_contributed,
-                           pie_chart_json=pie_chart_json,
-                           number_of_contributions=number_of_contributions)
+    # Prepare the context for the template
+    context = {
+        'case': case,
+        'enumerated_member_names': enumerated_member_names,
+        'not_paid_names': not_paid_names,
+        'deceased_person': deceased_member,
+        'total_amount_contributed': total_amount_contributed,
+        'pie_chart_json': pie_chart_json,
+        'number_of_contributions': number_of_contributions
+    }
 
+    # Check if the request is for a PDF
+    if request.args.get('format') == 'pdf':
+        # Generate PDF using ReportLab
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        styles = getSampleStyleSheet()
+        elements = []
+
+        # Add title
+        elements.append(Paragraph(f"Case Details - Case ID: {case.id}", styles['Title']))
+        elements.append(Spacer(1, 12))
+
+        # Add case summary table
+        data = [
+            ['Case ID', 'Case Amount', 'Deceased Person', 'Total Contributed Amount'],
+            [str(case.id), f"${case.case_amount}", deceased_member, f"${total_amount_contributed}"]
+        ]
+        t = Table(data)
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 14),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 12),
+            ('TOPPADDING', (0, 1), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(t)
+        elements.append(Spacer(1, 12))
+
+        # Add contributing members
+        elements.append(Paragraph("Contributing Members", styles['Heading2']))
+        for index, member_name in enumerated_member_names:
+            elements.append(Paragraph(f"{index}. {member_name}", styles['Normal']))
+        elements.append(Spacer(1, 12))
+
+        # Add non-contributing members
+        elements.append(Paragraph("Non-Contributing Members", styles['Heading2']))
+        for index, member_name in not_paid_names:
+            elements.append(Paragraph(f"{index}. {member_name}", styles['Normal']))
+
+        doc.build(elements)
+        buffer.seek(0)
+        
+        # Create a response with the PDF
+        response = make_response(buffer.getvalue())
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'inline; filename=case_details_{case_id}.pdf'
+        
+        return response
+
+    # If not requesting PDF, render the HTML template
+    return render_template('case_details.html', **context)

@@ -19,8 +19,8 @@ class Member(UserMixin, db.Model):
     name = db.Column(db.String(255), nullable=False)
     alias_name_1 = db.Column(db.String(255), nullable=True, default=None)
     alias_name_2 = db.Column(db.String(255), nullable=True, default=None)
-    id_number = db.Column(db.String(12), nullable=False, unique=True)
-    phone_number = db.Column(db.String(15), unique=True, nullable=False)
+    id_number = db.Column(db.String(12), nullable=True)
+    phone_number = db.Column(db.String(15), nullable=True)
     password_hash = db.Column(db.String(255), nullable=False)
     reg_fee_paid = db.Column(db.Boolean, default=False)
     is_admin = db.Column(db.Boolean, default=False)
@@ -33,11 +33,20 @@ class Member(UserMixin, db.Model):
     contributions = db.relationship('Contribution', back_populates='member', lazy=True)
     
     
-    def __init__(self, name, id_number, phone_number, password):
-        self.name = name
-        self.id_number = id_number
-        self.phone_number = phone_number
-        self.set_password(password)
+    def __init__(self, **kwargs):
+        self.name = kwargs.get('name')
+        self.id_number = kwargs.get('id_number')
+        self.phone_number = kwargs.get('phone_number')
+        self.alias_name_1 = kwargs.get('alias_name_1')
+        self.alias_name_2 = kwargs.get('alias_name_2')
+        self.reg_fee_paid = kwargs.get('reg_fee_paid', False)
+        self.is_admin = kwargs.get('is_admin', False)
+        self.active = kwargs.get('active', True)
+        self.is_deceased = kwargs.get('is_deceased', False)
+        
+        if 'password' in kwargs:
+            self.set_password(kwargs['password'])
+            
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)

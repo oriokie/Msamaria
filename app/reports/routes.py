@@ -1,4 +1,4 @@
-from flask import send_file, Blueprint, render_template
+from flask import send_file, Blueprint, render_template, jsonify
 import csv
 from flask import make_response
 import io
@@ -6,44 +6,96 @@ from app.members.models import Member
 from app.cases.models import Case
 from app.members.models import Dependent
 from app.cases.utils import fetch_member_id, get_member_name, get_dependent_name
+from openpyxl import Workbook
+from io import BytesIO
+import logging
+
 
 reports_bp = Blueprint('reports', __name__)
+logger = logging.getLogger(__name__)
 
 # Route for displaying the page with download buttons
 @reports_bp.route('/reports')
 def reports():
     return render_template('reports.html')
 
-@reports_bp.route('/generate_active_members_report')
+@reports_bp.route('/generate_active_members_report', methods=['GET'])
 def generate_active_members_report():
-    active_members = Member.query.filter_by(active=True,
-                                            is_deceased=False,
-                                            reg_fee_paid=True).all()
-    report_data = []
+    try:
+        # Create a new workbook and select the active sheet
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Members and Dependents"
 
-    for member in active_members:
-        # Get dependents for the current member
-        dependents = Dependent.query.filter_by(member_id=member.id).all()
+        # Write header row
+        headers = ['name', 'alias_name_1', 'alias_name_2', 'id_number', 'phone_number', 
+                   'reg_fee_paid', 'is_admin', 'active', 'is_deceased', 'spouse', 
+                   'contributor_father', 'contributor_mother', 'spouse_father', 'spouse_mother', 
+                   'first_child', 'second_child', 'third_child', 'fourth_child', 'fifth_child']
+        ws.append(headers)
 
-        # Create a list to store dependent information
-        dependent_info = []
-        for dependent in dependents:
-            dependent_info.append({
-                'Name': dependent.name,
-                'Relationship': dependent.relationship,
-                # Add more fields as needed
-            })
+        # Fetch all members
+        members = Member.query.filter_by(active=True, is_deceased=False, reg_fee_paid=True).all()
 
-        # Append member and dependent information to the report data
-        report_data.append({
-            'Member ID': member.id,
-            'Member Name': member.name,
-            'Member ID Number': member.id_number,
-            'Member Phone Number': member.phone_number,
-            'Dependents': dependent_info
-        })
+        for member in members:
+            # Prepare member data
+            member_data = [
+                member.name,
+                member.alias_name_1,
+                member.alias_name_2,
+                member.id_number,
+                member.phone_number,
+                1 if member.reg_fee_paid else 0,
+                1 if member.is_admin else 0,
+                1 if member.active else 0,
+                1 if member.is_deceased else 0
+            ]
 
-    return generate_csv_response(report_data, 'active_members_report.csv')
+            # Prepare dependents data
+            dependents_data = [''] * 10  # Initialize with empty strings
+            dependents = Dependent.query.filter_by(member_id=member.id).all()
+            for dependent in dependents:
+                if dependent.relationship == 'Spouse':
+                    dependents_data[0] = dependent.name
+                elif dependent.relationship == 'Father':
+                    dependents_data[1] = dependent.name
+                elif dependent.relationship == 'Mother':
+                    dependents_data[2] = dependent.name
+                elif dependent.relationship == 'Father-in-law':
+                    dependents_data[3] = dependent.name
+                elif dependent.relationship == 'Mother-in-law':
+                    dependents_data[4] = dependent.name
+                elif dependent.relationship == 'Child':
+                    for i in range(5, 10):
+                        if dependents_data[i] == '':
+                            dependents_data[i] = dependent.name
+                            break
+
+            # Combine member and dependents data and write to worksheet
+            ws.append(member_data + dependents_data)
+
+        # Save the workbook to a BytesIO object
+        excel_file = BytesIO()
+        wb.save(excel_file)
+        excel_file.seek(0)
+
+        # Determine the correct parameter name for send_file
+        if current_app.config['FLASK_VERSION'] >= '2.0':
+            download_param = 'download_name'
+        else:
+            download_param = 'attachment_filename'
+
+        # Send the file for download
+        return send_file(
+            excel_file,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            **{download_param: 'active_members_report.xlsx'}
+        )
+
+    except Exception as e:
+        logger.error(f'Error during Excel download: {str(e)}')
+        return jsonify({'error': str(e)}), 500
 
 
 @reports_bp.route('/generate_inactive_members_report')
@@ -308,3 +360,82 @@ def generate_all_contributions_active():
     response = Response(csv_data, mimetype='text/csv')
     response.headers.set('Content-Disposition', 'attachment', filename='contributions_active.csv')
     return response
+
+@reports_bp.route('/download', methods=['GET'])
+def download_excel():
+    try:
+        # Create a new workbook and select the active sheet
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Members and Dependents"
+
+        # Write header row
+        headers = ['name', 'alias_name_1', 'alias_name_2', 'id_number', 'phone_number', 
+                   'reg_fee_paid', 'is_admin', 'active', 'is_deceased', 'spouse', 
+                   'contributor_father', 'contributor_mother', 'spouse_father', 'spouse_mother', 
+                   'first_child', 'second_child', 'third_child', 'fourth_child', 'fifth_child']
+        ws.append(headers)
+
+        # Fetch all members
+        members = Member.query.all()
+
+        for member in members:
+            # Prepare member data
+            member_data = [
+                member.name,
+                member.alias_name_1,
+                member.alias_name_2,
+                member.id_number,
+                member.phone_number,
+                1 if member.reg_fee_paid else 0,
+                1 if member.is_admin else 0,
+                1 if member.active else 0,
+                1 if member.is_deceased else 0
+            ]
+
+            # Prepare dependents data
+            dependents_data = [''] * 10  # Initialize with empty strings
+            dependents = Dependent.query.filter_by(member_id=member.id).all()
+            for dependent in dependents:
+                if dependent.relationship == 'Spouse':
+                    dependents_data[0] = dependent.name
+                elif dependent.relationship == 'Father':
+                    dependents_data[1] = dependent.name
+                elif dependent.relationship == 'Mother':
+                    dependents_data[2] = dependent.name
+                elif dependent.relationship == 'Father-in-law':
+                    dependents_data[3] = dependent.name
+                elif dependent.relationship == 'Mother-in-law':
+                    dependents_data[4] = dependent.name
+                elif dependent.relationship == 'Child':
+                    for i in range(5, 10):
+                        if dependents_data[i] == '':
+                            dependents_data[i] = dependent.name
+                            break
+
+            # Combine member and dependents data and write to worksheet
+            ws.append(member_data + dependents_data)
+
+        # Save the workbook to a BytesIO object
+        excel_file = BytesIO()
+        wb.save(excel_file)
+        excel_file.seek(0)
+
+        # Determine the correct parameter name for send_file
+        if current_app.config['FLASK_VERSION'] >= '2.0':
+            download_param = 'download_name'
+        else:
+            download_param = 'attachment_filename'
+
+        # Send the file for download
+        return send_file(
+            excel_file,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            **{download_param: 'members_and_dependents.xlsx'}
+        )
+
+    except Exception as e:
+        logger.error(f'Error during Excel download: {str(e)}')
+        return jsonify({'error': str(e)}), 500
+

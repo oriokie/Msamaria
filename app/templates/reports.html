@@ -73,5 +73,17 @@
       </div>
     </div>
   </div>
+
+  <div class="col-md-6 col-lg-4 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h2 class="card-title">Download All</h2>
+        <form action="{{ url_for('reports.download_excel') }}" method="get">
+          <button type="submit" class="btn btn-primary">View</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
   {% endblock %}
 </div>

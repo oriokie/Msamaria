@@ -8,7 +8,6 @@ import logging
 from app.contributions.models import Contribution
 from app.cases.models import Case
 
-
 csv_bp = Blueprint('csv', __name__, url_prefix='/csv')
 logger = logging.getLogger(__name__)
 
@@ -26,17 +25,23 @@ def upload_csv():
         csv_data = csv.DictReader(io.StringIO(file.stream.read().decode("latin-1")))
         for row in csv_data:
             # Check if member with the same phone number already exists
-            existing_member = Member.query.filter_by(phone_number=row['member_phone_number']).first()
+            existing_member = Member.query.filter_by(phone_number=row['phone_number']).first()
             if existing_member:
-                logger.info(f'Skipping creation of member with phone number {row["member_phone_number"]} as it already exists')
+                logger.info(f'Skipping creation of member with phone number {row["phone_number"]} as it already exists')
                 member = existing_member
             else:
                 # Create member
                 member = Member(
-                    name=row['member_name'],
-                    id_number=row['member_id_number'],
-                    phone_number=row['member_phone_number'],
-                    password=row['member_phone_number']  # Using phone number as password
+                    name=row['name'],
+                    alias_name_1=row['alias_name_1'],
+                    alias_name_2=row['alias_name_2'],
+                    id_number=row['id_number'],
+                    phone_number=row['phone_number'],
+                    password=row['phone_number'],  # Using phone number as password
+                    reg_fee_paid=bool(int(row['reg_fee_paid'])),
+                    is_admin=bool(int(row['is_admin'])),
+                    active=bool(int(row['active'])),
+                    is_deceased=bool(int(row['is_deceased']))
                 )
                 db.session.add(member)
                 logger.info(f'Member created: {member}')
@@ -45,21 +50,20 @@ def upload_csv():
                 db.session.commit()
 
             # Iterate over each column in the row
-            for column, value in row.items():
-                # If the column is empty or not related to dependents, skip it
-                if not value or column.startswith('member_'):
-                    continue
-                
-                # Create dependent with relationship based on column name
-                relationship = get_relationship(column)
-                dependent = Dependent(
-                    name=value,
-                    member_id=member.id,
-                    relationship=relationship
-                )
-                db.session.add(dependent)
-                logger.info(f'Dependent created: {dependent}')
-                dependents.append(dependent)
+            dependent_columns = ['spouse', 'contributor_father', 'contributor_mother', 'spouse_father', 'spouse_mother', 
+                                 'first_child', 'second_child', 'third_child', 'fourth_child', 'fifth_child']
+            for column in dependent_columns:
+                value = row.get(column)
+                if value:
+                    relationship = get_relationship(column)
+                    dependent = Dependent(
+                        name=value,
+                        member_id=member.id,
+                        relationship=relationship
+                    )
+                    db.session.add(dependent)
+                    logger.info(f'Dependent created: {dependent}')
+                    dependents.append(dependent)
 
         # Commit all changes to the database
         db.session.commit()
@@ -73,18 +77,19 @@ def upload_csv():
 def get_relationship(column):
     # Map column names to relationships
     relationships = {
-        'Spouse': 'Spouse',
-        'Contributor\'s Father': 'Father',
-        'Contributor\'s Mother': 'Mother',
-        'Spouse\'s Father': 'Father',
-        'Spouse\'s Mother': 'Mother',
-        'First Child': 'Child',
-        'Second Child': 'Child',
-        'Third Child': 'Child',
-        'Fourth Child': 'Child',
-        'Fifth Child': 'Child'
+        'spouse': 'Spouse',
+        'contributor_father': 'Father',
+        'contributor_mother': 'Mother',
+        'spouse_father': 'Father-in-law',
+        'spouse_mother': 'Mother-in-law',
+        'first_child': 'Child',
+        'second_child': 'Child',
+        'third_child': 'Child',
+        'fourth_child': 'Child',
+        'fifth_child': 'Child'
     }
     return relationships.get(column, 'Unknown')
+
 
 @csv_bp.route('/upload_pay', methods=['GET', 'POST'])
 def upload_contributions():

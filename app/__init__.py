@@ -6,6 +6,7 @@ from flask_login import LoginManager
 from app.members.models import Member
 from app.contributions.models import Contribution
 import logging
+import flask
 
 # Create an instance of LoginManager
 login_manager = LoginManager()
@@ -13,6 +14,7 @@ login_manager = LoginManager()
 def create_app(config=None):
     # Initialize Flask application
     app = Flask(__name__)
+    app.config['FLASK_VERSION'] = flask.__version__
 
     @app.errorhandler(404)
     def page_not_found(e):

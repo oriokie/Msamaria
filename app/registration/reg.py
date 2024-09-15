@@ -10,8 +10,8 @@ regnew_bp = Blueprint('regnew', __name__)
 
 class MemberForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
-    id_number = StringField('ID Number', validators=[DataRequired(), Length(min=12, max=12)])
-    phone_number = StringField('Phone Number', validators=[DataRequired()])
+    id_number = StringField('ID Number', validators=[Length(min=5, max=7)])
+    phone_number = StringField('Phone Number')
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
 

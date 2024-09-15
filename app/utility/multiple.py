@@ -22,8 +22,17 @@ def upload_csv():
         dependents = []
 
         # Parse CSV file
-        csv_data = csv.DictReader(io.StringIO(file.stream.read().decode("latin-1")))
+        csv_data = csv.DictReader(io.StringIO(file.stream.read().decode("utf-8")))
         for row in csv_data:
+            # Remove BOM from the 'name' field if present
+            if '\ufeffname' in row:
+                row['name'] = row.pop('\ufeffname')
+            # Ensure all expected fields are present
+            required_fields = ['name', 'phone_number']
+            for field in required_fields:
+                if field not in row or not row[field].strip():
+                    logger.error(f"Missing or empty field '{field}' in row: {row}")
+                    continue  # Skip this row if required fields are missing
             # Check if member with the same phone number already exists
             existing_member = Member.query.filter_by(phone_number=row['phone_number']).first()
             if existing_member:

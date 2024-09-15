@@ -71,8 +71,10 @@ def create_app(config=None):
     from app.members import models
 
     # Create the first admin user
-    #with app.app_context():
-        #Member.create_first_admin()
+    with app.app_context():
+        db.create_all()
+        if not Member.query.filter_by(is_admin=True).first():
+            Member.create_first_admin()
     
     configure_logging(app)
 

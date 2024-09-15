@@ -1,11 +1,10 @@
-<!-- templates/expenses_table_rows.html -->
 {% for expense in expenses %}
-<tr>
-  <td>{{ expense.id }}</td>
-  <td>{{ expense.case_id }}</td>
-  <td>{{ expense.description }}</td>
-  <td>{{ expense.amount }}</td>
-  <td>{{ expense.created_at }}</td>
-  <td>{{ expense.updated_at }}</td>
+<tr class="bg-white border-b hover:bg-gray-50 transition duration-150 ease-in-out">
+  <td class="px-6 py-4 text-gray-900 whitespace-nowrap">{{ expense.id }}</td>
+  <td class="px-6 py-4 text-gray-900 whitespace-nowrap">{{ expense.case_id }}</td>
+  <td class="px-6 py-4 text-gray-600">{{ expense.description }}</td>
+  <td class="px-6 py-4 text-gray-900">{{ expense.amount }}</td>
+  <td class="px-6 py-4 text-gray-500">{{ expense.created_at }}</td>
+  <td class="px-6 py-4 text-gray-500">{{ expense.updated_at }}</td>
 </tr>
 {% endfor %}

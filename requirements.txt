@@ -4,3 +4,4 @@ flask_migrate
 flask_login
 plotly
 flask_wtf
+reportlab

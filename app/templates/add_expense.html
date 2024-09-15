@@ -1,31 +1,51 @@
-<!-- templates/add_expense.html -->
 {% extends "base.html" %} {% block content %}
-<div class="container">
-  <div class="row">
-    <div class="col-md-8 offset-md-2">
-      <div class="card mt-5">
-        <div class="card-header">
-          <h1 class="card-title">Add Expense for Case {{ case_id }}</h1>
-        </div>
-        <div class="card-body">
-          <form action="{{ url_for('expenses.add_expense') }}" method="POST">
-            <input type="hidden" name="case_id" value="{{ case_id }}" />
-            <div class="mb-3">
-              <label for="description" class="form-label">Description:</label>
-              <input type="text" id="description" name="description" class="form-control" required />
-            </div>
-            <div class="mb-3">
-              <label for="amount" class="form-label">Amount:</label>
-              <input type="number" id="amount" name="amount" class="form-control" step="0.01" required />
-            </div>
-            <div class="text-center">
-              <button type="submit" class="btn btn-primary">Submit</button>
-              <a href="{{ url_for('expenses.expenses') }}" class="btn btn-secondary">Back to Expenses</a>
-            </div>
-          </form>
-        </div>
+<div class="max-w-4xl mx-auto mt-10">
+  <div class="bg-white shadow-md rounded-lg p-6">
+    <h1 class="text-2xl font-semibold text-gray-800 mb-6 text-center">Add Expense for Case {{ case_id }}</h1>
+    <form action="{{ url_for('expenses.add_expense') }}" method="POST" class="space-y-6">
+      <input type="hidden" name="case_id" value="{{ case_id }}" />
+
+      <!-- Description -->
+      <div>
+        <label for="description" class="block text-sm font-medium text-gray-700">Description:</label>
+        <input
+          type="text"
+          id="description"
+          name="description"
+          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          required
+        />
       </div>
-    </div>
+
+      <!-- Amount -->
+      <div>
+        <label for="amount" class="block text-sm font-medium text-gray-700">Amount:</label>
+        <input
+          type="number"
+          id="amount"
+          name="amount"
+          step="0.01"
+          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          required
+        />
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex justify-center space-x-4">
+        <button
+          type="submit"
+          class="px-6 py-2 text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          Submit
+        </button>
+        <a
+          href="{{ url_for('expenses.expenses') }}"
+          class="px-6 py-2 text-gray-600 bg-gray-200 rounded-lg shadow hover:bg-gray-300 focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+        >
+          Back to Expenses
+        </a>
+      </div>
+    </form>
   </div>
 </div>
 {% endblock %}

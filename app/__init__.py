@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from config import Config, TestConfig
 from .db import db
 from flask_migrate import Migrate
@@ -13,6 +13,18 @@ login_manager = LoginManager()
 def create_app(config=None):
     # Initialize Flask application
     app = Flask(__name__)
+
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('404.html'), 404
+    
+    @app.errorhandler(403)
+    def forbidden(e):
+        return render_template('403.html'), 403
+    
+    @app.errorhandler(401)
+    def unauthorized(e):
+        return render_template('401.html'), 401
     
     # Load configuration from config.py
 

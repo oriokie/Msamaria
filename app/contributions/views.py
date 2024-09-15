@@ -5,7 +5,7 @@ from app.contributions.models import Contribution
 from app.cases.models import Case
 from sqlalchemy import or_, and_
 from flask import Blueprint
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, desc
 from app.cases.utils import fetch_member_id, get_member_name, get_dependent_name
 from app.finance.models import Expense
 import plotly.graph_objs as go
@@ -16,7 +16,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from io import BytesIO
-
+from collections import namedtuple
 
 
 # Define a Blueprint for the contributions route
@@ -141,13 +141,36 @@ def undo_contribution():
 #     return
 
 # Define a route for the summary page
+def iter_pages(page, total_pages, left_edge=2, left_current=2, right_current=5, right_edge=2):
+    last = 0
+    for num in range(1, total_pages + 1):
+        if (
+            num <= left_edge
+            or (page - left_current - 1 < num < page + right_current)
+            or num > total_pages - right_edge
+        ):
+            if last + 1 != num:
+                yield None
+            yield num
+            last = num
+
 @contributions_bp.route('/case_summary')
 def case_summary():
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
 
-    # Query database to get information about all cases
-    cases = Case.query.all()
+    # Query for cases, ordered by descending ID (most recent first)
+    query = Case.query.order_by(desc(Case.id))
+    
+    # Get the total number of cases
+    total_cases = query.count()
 
-    # Initialize a list to store case summaries
+    # Calculate the offset
+    offset = (page - 1) * per_page
+
+    # Get paginated cases
+    cases = query.offset(offset).limit(per_page).all()
+
     case_summaries = []
 
     for case in cases:
@@ -163,7 +186,6 @@ def case_summary():
         active_members_contributed = len(set(contribution.member_id for contribution in case.contributions if contribution.paid))
         active_members_not_contributed = len(set(contribution.member_id for contribution in case.contributions if not contribution.paid))
         total_amount_contributed = active_members_contributed * case.case_amount
-        total_expenses = total_expenses
         total_amount = total_amount_contributed - total_expenses
         deceased_person = deceased_member
 
@@ -180,9 +202,29 @@ def case_summary():
 
         # Append the case summary to the list
         case_summaries.append(case_summary)
+ # Create a custom Pagination object
+    CustomPagination = namedtuple('CustomPagination', ['items', 'page', 'per_page', 'total', 'pages', 'has_next', 'has_prev', 'next_num', 'prev_num', 'iter_pages'])
+    
+    total_pages = (total_cases + per_page - 1) // per_page
+    has_next = page < total_pages
+    has_prev = page > 1
 
-    # Pass the case summaries to the template for rendering
-    return render_template('case_summary.html', case_summaries=case_summaries)
+    cases_pagination = CustomPagination(
+        items=case_summaries,
+        page=page,
+        per_page=per_page,
+        total=total_cases,
+        pages=total_pages,
+        has_next=has_next,
+        has_prev=has_prev,
+        next_num=page + 1 if has_next else None,
+        prev_num=page - 1 if has_prev else None,
+        iter_pages=lambda **kwargs: iter_pages(page, total_pages, **kwargs)
+    )
+
+    # Pass the custom pagination object to the template for rendering
+    return render_template('case_summary.html', cases=cases_pagination, min=min)
+
 
 @contributions_bp.route('/case_details/<int:case_id>')
 def case_details(case_id):

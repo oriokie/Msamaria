@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Monthly Registration Fees{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Monthly Registration Fees</h1>
+
+    <form id="yearForm" class="mb-4">
+        <div class="form-group">
+            <label for="yearSelect">Select Year:</label>
+            <select class="form-control" id="yearSelect" name="year">
+                {% for year in range(current_year, current_year - 10, -1) %}
+                    <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Month</th>
+                <th>Total Fees</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for month, fee in monthly_fees.items() %}
+            <tr>
+                <td>{{ month_names[month] }}</td>
+                <td>{{ "%.0f"|format(fee) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>Total</th>
+                <th>{{ "%.0f"|format(monthly_fees.values()|sum) }}</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<script>
+document.getElementById('yearForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const year = document.getElementById('yearSelect').value;
+    window.location.href = `/registration-fees?year=${year}`;
+});
+</script>
+{% endblock %}

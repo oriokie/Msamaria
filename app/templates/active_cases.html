@@ -1,35 +1,46 @@
-<!-- active_cases.html -->
 {% extends 'base.html' %} {% block content %}
-<h2>Active Cases</h2>
-<table class="table table-striped table-bordered">
-  <thead>
-    <tr>
-      <th>Case ID</th>
-      <th>Deceased Person</th>
-      <th>Date Created</th>
-      <th>Case Amount</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for case, case_id, deceased_member in active_cases %}
-    <tr>
-      <td>{{ case_id }}</td>
-      <td>{{ deceased_member }}</td>
-      <td>{{ case.created_at }}</td>
-      <td>{{ case.case_amount }}</td>
-      <td>
-        <a href="{{ url_for('active_cases.edit_case', case_id=case.id) }}" class="btn btn-primary">Edit</a>
-        {% if not case.closed %}
-        <form method="post" action="{{ url_for('active_cases.close_case', case_id=case.id) }}">
-          <button type="submit" class="btn btn-danger">Close Case</button>
-        </form>
-        {% else %}
-        <span class="text-success">Closed</span>
-        {% endif %}
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="container mx-auto py-6">
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">Active Cases</h2>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+      <thead>
+        <tr class="bg-gray-100 border-b border-gray-200">
+          <th class="py-2 px-4 text-left text-gray-600 font-medium">Case ID</th>
+          <th class="py-2 px-4 text-left text-gray-600 font-medium">Deceased Person</th>
+          <th class="py-2 px-4 text-left text-gray-600 font-medium">Date Created</th>
+          <th class="py-2 px-4 text-left text-gray-600 font-medium">Case Amount</th>
+          <th class="py-2 px-4 text-left text-gray-600 font-medium">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for case, case_id, deceased_member in active_cases %}
+        <tr class="border-b">
+          <td class="py-2 px-4 text-gray-800">{{ case_id }}</td>
+          <td class="py-2 px-4 text-gray-800">{{ deceased_member }}</td>
+          <td class="py-2 px-4 text-gray-800">{{ case.created_at }}</td>
+          <td class="py-2 px-4 text-gray-800">{{ case.case_amount }}</td>
+          <td class="py-2 px-4 flex items-center space-x-2">
+            <a
+              href="{{ url_for('active_cases.edit_case', case_id=case.id) }}"
+              class="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-lg text-sm"
+            >
+              Edit
+            </a>
+            {% if not case.closed %}
+            <form method="post" action="{{ url_for('active_cases.close_case', case_id=case.id) }}">
+              <button type="submit" class="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-lg text-sm">
+                Close Case
+              </button>
+            </form>
+            {% else %}
+            <span class="text-green-600 font-medium">Closed</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endblock %}

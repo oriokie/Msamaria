@@ -6,4 +6,4 @@ plotly
 flask_wtf
 reportlab
 openpyxl
-
+pdfkit
